@@ -1,0 +1,11 @@
+{
+  "_nota": "Ajustes aos 27 senadores com mandato até 2031 que NÃO aparecem nos arquivos de eleição do TSE (renúncias, nomeações, mortes). Chave = sqcand do titular em data/senado-mandato-2031.json. Campos: nome, partido, motivo, status (padrão: mandato). Quem foi eleito para outro cargo em 2026 é tratado automaticamente pelo servidor.",
+  "ajustes": {
+    "100001607043": {
+      "nome": "ANA PAULA LOBATO",
+      "partido": "PSB",
+      "status": "suplente",
+      "motivo": "Flávio Dino (MA) deixou o Senado em fevereiro de 2024 para assumir vaga no STF; assumiu a 1ª suplente, Ana Paula Lobato. Partido: registro do TSE de 2022 (eventual troca posterior não verificada)."
+    }
+  }
+}

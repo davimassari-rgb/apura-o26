@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Apuração 2026</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topo">
+    <div class="marca">
+      <span class="ponto" id="pontoAoVivo"></span>
+      <div>
+        <h1>Apuração · Eleições 2026</h1>
+        <p class="sub" id="subtitulo">1º turno · 04/10/2026 · Fonte: TSE (resultados.tse.jus.br)</p>
+      </div>
+    </div>
+    <div class="controles">
+      <div class="seg" role="group" aria-label="Fonte dos dados">
+        <button data-fonte="tse" class="ativo">Oficial TSE</button>
+        <button data-fonte="demo">Demonstração</button>
+      </div>
+      <span class="atualizado" id="atualizado">—</span>
+      <button class="btn" id="btnAtualizar" title="Atualizar agora">↻</button>
+    </div>
+  </header>
+
+  <nav class="abas" role="tablist">
+    <button role="tab" data-aba="brasil" class="ativo">Brasil</button>
+    <button role="tab" data-aba="regioes">Regiões</button>
+    <button role="tab" data-aba="governadores">Governadores</button>
+    <button role="tab" data-aba="senadores">Senadores</button>
+    <button role="tab" data-aba="depfed">Dep. Federais</button>
+    <button role="tab" data-aba="depest">Dep. Estaduais</button>
+    <button role="tab" data-aba="congresso">Congresso 2027</button>
+    <button role="tab" data-aba="comparativo">2022 × 2026</button>
+    <button role="tab" data-aba="estados">Estados</button>
+  </nav>
+
+  <div id="aviso" class="aviso" hidden></div>
+
+  <main>
+    <!-- BRASIL -->
+    <section id="aba-brasil" class="aba">
+      <div class="grid-topo">
+        <div class="card">
+          <h2>Presidente · Brasil</h2>
+          <div id="brProgresso"></div>
+          <div id="brCandidatos" class="lista-cand"></div>
+        </div>
+        <div class="card">
+          <h2>Líder por estado</h2>
+          <div id="mapa" class="mapa"></div>
+          <div id="mapaLegenda" class="legenda"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Comparecimento</h2>
+        <div id="brNumeros" class="numeros"></div>
+      </div>
+    </section>
+
+    <!-- REGIÕES -->
+    <section id="aba-regioes" class="aba" hidden>
+      <div class="seg seg-regioes" id="filtroRegiao" role="group" aria-label="Região">
+        <button data-regiao="todas" class="ativo">Todas</button>
+        <button data-regiao="norte">Norte</button>
+        <button data-regiao="nordeste">Nordeste</button>
+        <button data-regiao="centro-oeste">Centro-Oeste</button>
+        <button data-regiao="sudeste">Sudeste</button>
+        <button data-regiao="sul">Sul</button>
+      </div>
+      <div id="regioesConteudo"></div>
+    </section>
+
+    <!-- ESTADOS -->
+    <section id="aba-estados" class="aba" hidden>
+      <div class="filtros">
+        <label>Estado <select id="selUF"></select></label>
+        <label>Cargo
+          <select id="selCargo">
+            <option value="1">Presidente</option>
+            <option value="3">Governador</option>
+            <option value="5">Senador</option>
+          </select>
+        </label>
+      </div>
+      <div class="card">
+        <h2 id="ufTitulo"></h2>
+        <div id="ufProgresso"></div>
+        <div id="ufCandidatos" class="lista-cand"></div>
+      </div>
+      <div class="card">
+        <h2>Comparecimento</h2>
+        <div id="ufNumeros" class="numeros"></div>
+      </div>
+    </section>
+
+    <!-- GOVERNADORES / SENADORES -->
+    <section id="aba-governadores" class="aba" hidden></section>
+    <section id="aba-senadores" class="aba" hidden></section>
+
+    <!-- DEPUTADOS -->
+    <section id="aba-depfed" class="aba" hidden></section>
+    <section id="aba-depest" class="aba" hidden></section>
+
+    <!-- CONGRESSO 2027 -->
+    <section id="aba-congresso" class="aba" hidden></section>
+
+    <!-- COMPARATIVO -->
+    <section id="aba-comparativo" class="aba" hidden></section>
+  </main>
+  <div id="tooltip" class="tooltip" hidden></div>
+
+  <footer>
+    Dados oficiais consultados diretamente dos arquivos públicos do Tribunal Superior Eleitoral.
+    Atualização em tempo real: cada arquivo é reconsultado no instante em que o TSE o renova. <span id="rodapeUrl"></span>
+  </footer>
+
+  <script src="app.js"></script>
+  <script src="cargos.js"></script>
+  <script src="comparativo.js"></script>
+  <script src="congresso.js"></script>
+</body>
+</html>

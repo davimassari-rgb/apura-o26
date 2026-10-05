@@ -1,0 +1,707 @@
+{
+ "fonte": "TSE – Portal de Dados Abertos, consulta_cand_2022 (senadores eleitos em 2022 e suplentes; partido da eleição)",
+ "senadores": [
+  {
+   "uf": "ac",
+   "numero": "444",
+   "nome": "ALAN RICK",
+   "nomeCompleto": "ALAN RICK MIRANDA",
+   "partido": "UNIÃO",
+   "sqcand": "10001714547",
+   "suplentes": [
+    {
+     "uf": "ac",
+     "numero": "444",
+     "nome": "GEMIL JUNIOR",
+     "nomeCompleto": "GEMIL SALIM DE ABREU JUNIOR",
+     "partido": "UNIÃO",
+     "sqcand": "10001714548"
+    },
+    {
+     "uf": "ac",
+     "numero": "444",
+     "nome": "CORONEL CASAGRANDE",
+     "nomeCompleto": "MICHEL NEGREIROS CASAGRANDE",
+     "partido": "UNIÃO",
+     "sqcand": "10001714549"
+    }
+   ]
+  },
+  {
+   "uf": "al",
+   "numero": "151",
+   "nome": "RENAN FILHO",
+   "nomeCompleto": "JOSÉ RENAN VASCONCELOS CALHEIROS FILHO",
+   "partido": "MDB",
+   "sqcand": "20001698127",
+   "suplentes": [
+    {
+     "uf": "al",
+     "numero": "151",
+     "nome": "FERNANDO FARIAS",
+     "nomeCompleto": "FERNANDO LOPES DE FARIAS",
+     "partido": "MDB",
+     "sqcand": "20001698126"
+    },
+    {
+     "uf": "al",
+     "numero": "151",
+     "nome": "ADÉLIA MARIA",
+     "nomeCompleto": "ADÉLIA MARIA CORREIA SANTOS KONISHI",
+     "partido": "PV",
+     "sqcand": "20001698128"
+    }
+   ]
+  },
+  {
+   "uf": "am",
+   "numero": "555",
+   "nome": "OMAR AZIZ",
+   "nomeCompleto": "OMAR JOSÉ ABDEL AZIZ",
+   "partido": "PSD",
+   "sqcand": "40001618514",
+   "suplentes": [
+    {
+     "uf": "am",
+     "numero": "555",
+     "nome": "CHEILA MOREIRA",
+     "nomeCompleto": "CHEILA VIEIRA MOREIRA",
+     "partido": "PT",
+     "sqcand": "40001618515"
+    },
+    {
+     "uf": "am",
+     "numero": "555",
+     "nome": "JOAO PEDRO",
+     "nomeCompleto": "JOAO PEDRO GONCALVES DA COSTA",
+     "partido": "PT",
+     "sqcand": "40001618513"
+    }
+   ]
+  },
+  {
+   "uf": "ap",
+   "numero": "444",
+   "nome": "DAVI",
+   "nomeCompleto": "DAVID SAMUEL ALCOLUMBRE TOBELEM",
+   "partido": "UNIÃO",
+   "sqcand": "30001607748",
+   "suplentes": [
+    {
+     "uf": "ap",
+     "numero": "444",
+     "nome": "JOSIEL",
+     "nomeCompleto": "JOSÉ SAMUEL ALCOLUMBRE TOBELEM",
+     "partido": "UNIÃO",
+     "sqcand": "30001607749"
+    },
+    {
+     "uf": "ap",
+     "numero": "444",
+     "nome": "BRENO",
+     "nomeCompleto": "BRENO BARBOSA CHAVES PINTO",
+     "partido": "UNIÃO",
+     "sqcand": "30001607747"
+    }
+   ]
+  },
+  {
+   "uf": "ba",
+   "numero": "555",
+   "nome": "OTTO ALENCAR",
+   "nomeCompleto": "OTTO ROBERTO MENDONCA DE ALENCAR",
+   "partido": "PSD",
+   "sqcand": "50001605790",
+   "suplentes": [
+    {
+     "uf": "ba",
+     "numero": "555",
+     "nome": "TERENCE LESSA",
+     "nomeCompleto": "CLAUDIR TERENCE LESSA LOPES DE OLIVEIRA",
+     "partido": "PT",
+     "sqcand": "50001605791"
+    },
+    {
+     "uf": "ba",
+     "numero": "555",
+     "nome": "HILDINHA MENEZES",
+     "nomeCompleto": "HILDA MARIA MONTEIRO DE MENEZES OLIVEIRA",
+     "partido": "PSD",
+     "sqcand": "50001605792"
+    }
+   ]
+  },
+  {
+   "uf": "ce",
+   "numero": "131",
+   "nome": "CAMILO",
+   "nomeCompleto": "CAMILO SOBREIRA DE SANTANA",
+   "partido": "PT",
+   "sqcand": "60001633582",
+   "suplentes": [
+    {
+     "uf": "ce",
+     "numero": "131",
+     "nome": "AUGUSTA BRITO",
+     "nomeCompleto": "AUGUSTA BRITO DE PAULA",
+     "partido": "PT",
+     "sqcand": "60001633584"
+    },
+    {
+     "uf": "ce",
+     "numero": "131",
+     "nome": "JANAINA FARIAS",
+     "nomeCompleto": "JANAINA CARLA FARIAS",
+     "partido": "PT",
+     "sqcand": "60001633583"
+    }
+   ]
+  },
+  {
+   "uf": "df",
+   "numero": "100",
+   "nome": "DAMARES ALVES",
+   "nomeCompleto": "DAMARES REGINA ALVES",
+   "partido": "REPUBLICANOS",
+   "sqcand": "70001677309",
+   "suplentes": [
+    {
+     "uf": "df",
+     "numero": "100",
+     "nome": "MANOEL ARRUDA",
+     "nomeCompleto": "MANOEL COELHO ARRUDA JUNIOR",
+     "partido": "UNIÃO",
+     "sqcand": "70001729074"
+    },
+    {
+     "uf": "df",
+     "numero": "100",
+     "nome": "PASTOR EGMAR",
+     "nomeCompleto": "EGMAR TAVARES DA SILVA",
+     "partido": "REPUBLICANOS",
+     "sqcand": "70001677311"
+    }
+   ]
+  },
+  {
+   "uf": "es",
+   "numero": "222",
+   "nome": "MAGNO MALTA",
+   "nomeCompleto": "MAGNO PEREIRA MALTA",
+   "partido": "PL",
+   "sqcand": "80001720164",
+   "suplentes": [
+    {
+     "uf": "es",
+     "numero": "222",
+     "nome": "MARCINHA MACEDO",
+     "nomeCompleto": "MARCIA CRISTINA MACEDO SILVA",
+     "partido": "PL",
+     "sqcand": "80001727033"
+    },
+    {
+     "uf": "es",
+     "numero": "222",
+     "nome": "TENENTE EMERSON",
+     "nomeCompleto": "EMERSON LUIZ SANTANA",
+     "partido": "PTB",
+     "sqcand": "80001731840"
+    }
+   ]
+  },
+  {
+   "uf": "go",
+   "numero": "222",
+   "nome": "WILDER MORAIS",
+   "nomeCompleto": "WILDER PEDRO DE MORAIS",
+   "partido": "PL",
+   "sqcand": "90001652051",
+   "suplentes": [
+    {
+     "uf": "go",
+     "numero": "222",
+     "nome": "IZAURA CARDOSO",
+     "nomeCompleto": "IZAURA CRISTINA CANTANHEDE PERES CARDOSO",
+     "partido": "PL",
+     "sqcand": "90001652053"
+    },
+    {
+     "uf": "go",
+     "numero": "222",
+     "nome": "HÉLIO ARAÚJO",
+     "nomeCompleto": "HELIO ARAUJO PEREIRA",
+     "partido": "PL",
+     "sqcand": "90001652052"
+    }
+   ]
+  },
+  {
+   "uf": "ma",
+   "numero": "400",
+   "nome": "FLÁVIO DINO",
+   "nomeCompleto": "FLÁVIO DINO DE CASTRO E COSTA",
+   "partido": "PSB",
+   "sqcand": "100001607043",
+   "suplentes": [
+    {
+     "uf": "ma",
+     "numero": "400",
+     "nome": "ANA PAULA LOBATO",
+     "nomeCompleto": "ANA PAULA DIAS LOBATO NOVA ALVES",
+     "partido": "PSB",
+     "sqcand": "100001607044"
+    },
+    {
+     "uf": "ma",
+     "numero": "400",
+     "nome": "LOURDINHA",
+     "nomeCompleto": "MARIA DE LOURDES PEREIRA E PEREIRA",
+     "partido": "PC do B",
+     "sqcand": "100001607045"
+    }
+   ]
+  },
+  {
+   "uf": "mg",
+   "numero": "200",
+   "nome": "CLEITINHO",
+   "nomeCompleto": "CLEITON GONTIJO DE AZEVEDO",
+   "partido": "PSC",
+   "sqcand": "130001671677",
+   "suplentes": [
+    {
+     "uf": "mg",
+     "numero": "200",
+     "nome": "ALEX DINIZ",
+     "nomeCompleto": "ALEX SANDRO COELHO DINIZ",
+     "partido": "PSC",
+     "sqcand": "130001671679"
+    },
+    {
+     "uf": "mg",
+     "numero": "200",
+     "nome": "WANDER DE SOUSA",
+     "nomeCompleto": "WANDER DE SOUSA",
+     "partido": "PSC",
+     "sqcand": "130001725459"
+    }
+   ]
+  },
+  {
+   "uf": "ms",
+   "numero": "111",
+   "nome": "TEREZA CRISTINA",
+   "nomeCompleto": "TEREZA CRISTINA CORREA DA COSTA DIAS",
+   "partido": "PP",
+   "sqcand": "120001651640",
+   "suplentes": [
+    {
+     "uf": "ms",
+     "numero": "111",
+     "nome": "TENENTE PORTELA",
+     "nomeCompleto": "APARECIDO ANDRADE PORTELA",
+     "partido": "PL",
+     "sqcand": "120001651639"
+    },
+    {
+     "uf": "ms",
+     "numero": "111",
+     "nome": "PAULO SALOMÃO",
+     "nomeCompleto": "PAULO JORGE SALOMÃO DA CAMARA NERY",
+     "partido": "PP",
+     "sqcand": "120001651638"
+    }
+   ]
+  },
+  {
+   "uf": "mt",
+   "numero": "222",
+   "nome": "WELLINGTON FAGUNDES",
+   "nomeCompleto": "WELLINGTON ANTÔNIO FAGUNDES",
+   "partido": "PL",
+   "sqcand": "110001676176",
+   "suplentes": [
+    {
+     "uf": "mt",
+     "numero": "222",
+     "nome": "MAURO CARVALHO",
+     "nomeCompleto": "MAURO CARVALHO JUNIOR",
+     "partido": "UNIÃO",
+     "sqcand": "110001676177"
+    },
+    {
+     "uf": "mt",
+     "numero": "222",
+     "nome": "ROSANA MARTINELLI",
+     "nomeCompleto": "ROSANA TEREZA MARTINELLI",
+     "partido": "PL",
+     "sqcand": "110001728559"
+    }
+   ]
+  },
+  {
+   "uf": "pa",
+   "numero": "131",
+   "nome": "BETO FARO",
+   "nomeCompleto": "JOSÉ ROBERTO OLIVEIRA FARO",
+   "partido": "PT",
+   "sqcand": "140001611661",
+   "suplentes": [
+    {
+     "uf": "pa",
+     "numero": "131",
+     "nome": "JOSENIR",
+     "nomeCompleto": "JOSENIR GONÇALVES NASCIMENTO",
+     "partido": "PT",
+     "sqcand": "140001611662"
+    },
+    {
+     "uf": "pa",
+     "numero": "131",
+     "nome": "LENY CAMPÊLO",
+     "nomeCompleto": "LENY MAY DA SILVA CAMPÊLO",
+     "partido": "PC do B",
+     "sqcand": "140001611663"
+    }
+   ]
+  },
+  {
+   "uf": "pb",
+   "numero": "444",
+   "nome": "EFRAIM FILHO",
+   "nomeCompleto": "EFRAIM DE ARAÚJO MORAIS FILHO",
+   "partido": "UNIÃO",
+   "sqcand": "150001621390",
+   "suplentes": [
+    {
+     "uf": "pb",
+     "numero": "444",
+     "nome": "ANDRE AMARAL",
+     "nomeCompleto": "ANDRE AUGUSTO CASTRO DO AMARAL",
+     "partido": "PROS",
+     "sqcand": "150001621389"
+    },
+    {
+     "uf": "pb",
+     "numero": "444",
+     "nome": "ERIK MARINHO",
+     "nomeCompleto": "ERIK JANSON VIEIRA MONTEIRO MARINHO",
+     "partido": "UNIÃO",
+     "sqcand": "150001621391"
+    }
+   ]
+  },
+  {
+   "uf": "pe",
+   "numero": "130",
+   "nome": "TERESA LEITÃO",
+   "nomeCompleto": "MARIA TERESA LEITÃO DE MELO",
+   "partido": "PT",
+   "sqcand": "170001618130",
+   "suplentes": [
+    {
+     "uf": "pe",
+     "numero": "130",
+     "nome": "SILVIO COSTA",
+     "nomeCompleto": "SILVIO SERAFIM COSTA",
+     "partido": "REPUBLICANOS",
+     "sqcand": "170001618132"
+    },
+    {
+     "uf": "pe",
+     "numero": "130",
+     "nome": "FRANCISCO ALEXANDRE",
+     "nomeCompleto": "FRANCISCO FERREIRA ALEXANDRE",
+     "partido": "PT",
+     "sqcand": "170001618131"
+    }
+   ]
+  },
+  {
+   "uf": "pi",
+   "numero": "131",
+   "nome": "WELLINGTON DIAS",
+   "nomeCompleto": "JOSE WELLINGTON BARROSO DE ARAUJO DIAS",
+   "partido": "PT",
+   "sqcand": "180001605662",
+   "suplentes": [
+    {
+     "uf": "pi",
+     "numero": "131",
+     "nome": "JUSSARA LIMA",
+     "nomeCompleto": "ANTÔNIA JUSSARA GOMES ALVES SOUSA LIMA",
+     "partido": "PT",
+     "sqcand": "180001605664"
+    },
+    {
+     "uf": "pi",
+     "numero": "131",
+     "nome": "JOSE AMAURI",
+     "nomeCompleto": "JOSE AMAURI PEREIRA DE ARAUJO",
+     "partido": "PT",
+     "sqcand": "180001605663"
+    }
+   ]
+  },
+  {
+   "uf": "pr",
+   "numero": "444",
+   "nome": "SERGIO MORO",
+   "nomeCompleto": "SERGIO FERNANDO MORO",
+   "partido": "UNIÃO",
+   "sqcand": "160001621846",
+   "suplentes": [
+    {
+     "uf": "pr",
+     "numero": "444",
+     "nome": "LUIS FELIPE CUNHA",
+     "nomeCompleto": "LUIS FELIPE CUNHA",
+     "partido": "UNIÃO",
+     "sqcand": "160001621845"
+    },
+    {
+     "uf": "pr",
+     "numero": "444",
+     "nome": "RICARDO GUERRA",
+     "nomeCompleto": "RICARDO AUGUSTO GUERRA",
+     "partido": "UNIÃO",
+     "sqcand": "160001621844"
+    }
+   ]
+  },
+  {
+   "uf": "rj",
+   "numero": "222",
+   "nome": "ROMÁRIO",
+   "nomeCompleto": "ROMÁRIO DE SOUZA FARIA",
+   "partido": "PL",
+   "sqcand": "190001612455",
+   "suplentes": [
+    {
+     "uf": "rj",
+     "numero": "222",
+     "nome": "BRUNO BONETTI",
+     "nomeCompleto": "BRUNO BIERRENBACH BONETTI",
+     "partido": "PL",
+     "sqcand": "190001612456"
+    },
+    {
+     "uf": "rj",
+     "numero": "222",
+     "nome": "ANDREA FONTES",
+     "nomeCompleto": "ANDREA GOMES FONTES RODRIGUES",
+     "partido": "PL",
+     "sqcand": "190001724188"
+    }
+   ]
+  },
+  {
+   "uf": "rn",
+   "numero": "222",
+   "nome": "ROGÉRIO MARINHO",
+   "nomeCompleto": "ROGÉRIO SIMONETTI MARINHO",
+   "partido": "PL",
+   "sqcand": "200001603037",
+   "suplentes": [
+    {
+     "uf": "rn",
+     "numero": "222",
+     "nome": "FLÁVIO AZEVEDO",
+     "nomeCompleto": "FLÁVIO JOSÉ CAVALCANTI DE AZEVEDO",
+     "partido": "PL",
+     "sqcand": "200001603038"
+    },
+    {
+     "uf": "rn",
+     "numero": "222",
+     "nome": "IGOR TARGINO",
+     "nomeCompleto": "IGOR AUGUSTO FERNANDES TARGINO",
+     "partido": "SOLIDARIEDADE",
+     "sqcand": "200001603036"
+    }
+   ]
+  },
+  {
+   "uf": "ro",
+   "numero": "222",
+   "nome": "JAIME BAGATTOLI",
+   "nomeCompleto": "JAIME MAXIMINO BAGATTOLI",
+   "partido": "PL",
+   "sqcand": "220001713729",
+   "suplentes": [
+    {
+     "uf": "ro",
+     "numero": "222",
+     "nome": "PASTOR SEBASTIÃO VALADARES",
+     "nomeCompleto": "SEBASTIÃO VALADARES NETO",
+     "partido": "PL",
+     "sqcand": "220001713731"
+    },
+    {
+     "uf": "ro",
+     "numero": "222",
+     "nome": "DHEEP ROVER",
+     "nomeCompleto": "JAIR ROVER",
+     "partido": "PL",
+     "sqcand": "220001713730"
+    }
+   ]
+  },
+  {
+   "uf": "rr",
+   "numero": "111",
+   "nome": "DR. HIRAN",
+   "nomeCompleto": "HIRAN MANUEL GONÇALVES DA SILVA",
+   "partido": "PP",
+   "sqcand": "230001604259",
+   "suplentes": [
+    {
+     "uf": "rr",
+     "numero": "111",
+     "nome": "JR RODRIGUES",
+     "nomeCompleto": "JOSÉ RAIMUNDO RODRIGUES SILVA",
+     "partido": "REPUBLICANOS",
+     "sqcand": "230001604257"
+    },
+    {
+     "uf": "rr",
+     "numero": "111",
+     "nome": "ALINE REZENDE",
+     "nomeCompleto": "ALINE MARIA DE MENEZES REZENDE CHAGAS",
+     "partido": "PRTB",
+     "sqcand": "230001604258"
+    }
+   ]
+  },
+  {
+   "uf": "rs",
+   "numero": "100",
+   "nome": "HAMILTON MOURÃO",
+   "nomeCompleto": "ANTONIO HAMILTON MARTINS MOURÃO",
+   "partido": "REPUBLICANOS",
+   "sqcand": "210001610438",
+   "suplentes": [
+    {
+     "uf": "rs",
+     "numero": "100",
+     "nome": "LIZIANE BAYER",
+     "nomeCompleto": "LIZIANE BAYER DA COSTA",
+     "partido": "REPUBLICANOS",
+     "sqcand": "210001610440"
+    },
+    {
+     "uf": "rs",
+     "numero": "100",
+     "nome": "CORONEL ANDREUZZA",
+     "nomeCompleto": "MARIO GIUSSEPP SANTEZZI BERTOTTELLI ANDREUZZA",
+     "partido": "REPUBLICANOS",
+     "sqcand": "210001610439"
+    }
+   ]
+  },
+  {
+   "uf": "sc",
+   "numero": "222",
+   "nome": "JORGE SEIF",
+   "nomeCompleto": "JORGE SEIF JUNIOR",
+   "partido": "PL",
+   "sqcand": "240001611131",
+   "suplentes": [
+    {
+     "uf": "sc",
+     "numero": "222",
+     "nome": "HERMES KLANN",
+     "nomeCompleto": "HERMES ARTUR KLANN",
+     "partido": "PL",
+     "sqcand": "240001611129"
+    },
+    {
+     "uf": "sc",
+     "numero": "222",
+     "nome": "ADRIAN DA BLUKIT",
+     "nomeCompleto": "ADRIAN ROGERS CENSI",
+     "partido": "PL",
+     "sqcand": "240001611130"
+    }
+   ]
+  },
+  {
+   "uf": "se",
+   "numero": "111",
+   "nome": "LAÉRCIO",
+   "nomeCompleto": "LAERCIO JOSE DE OLIVEIRA",
+   "partido": "PP",
+   "sqcand": "260001635426",
+   "suplentes": [
+    {
+     "uf": "se",
+     "numero": "111",
+     "nome": "JANIER",
+     "nomeCompleto": "JANIER MOTA SANTOS PRIMO",
+     "partido": "PSD",
+     "sqcand": "260001635425"
+    },
+    {
+     "uf": "se",
+     "numero": "111",
+     "nome": "FERNANDO CARVALHO",
+     "nomeCompleto": "ANTONIO FERNANDO PEREIRA DE CARVALHO",
+     "partido": "PP",
+     "sqcand": "260001635424"
+    }
+   ]
+  },
+  {
+   "uf": "sp",
+   "numero": "222",
+   "nome": "ASTRONAUTA MARCOS PONTES",
+   "nomeCompleto": "MARCOS CESAR PONTES",
+   "partido": "PL",
+   "sqcand": "250001612472",
+   "suplentes": [
+    {
+     "uf": "sp",
+     "numero": "222",
+     "nome": "PROFESSOR ALBERTO",
+     "nomeCompleto": "ALBERTO ALVES DA FONSECA",
+     "partido": "PL",
+     "sqcand": "250001612470"
+    },
+    {
+     "uf": "sp",
+     "numero": "222",
+     "nome": "SIRLANGE MANGA",
+     "nomeCompleto": "SIRLANGE RODRIGUES FRATE MAGANHATO",
+     "partido": "PL",
+     "sqcand": "250001612471"
+    }
+   ]
+  },
+  {
+   "uf": "to",
+   "numero": "444",
+   "nome": "PROFESSORA DORINHA",
+   "nomeCompleto": "MARIA AUXILIADORA SEABRA REZENDE",
+   "partido": "UNIÃO",
+   "sqcand": "270001649254",
+   "suplentes": [
+    {
+     "uf": "to",
+     "numero": "444",
+     "nome": "PROFESSORA LU",
+     "nomeCompleto": "LUCINEIDE PARIZI FREITAS",
+     "partido": "UNIÃO",
+     "sqcand": "270001649253"
+    },
+    {
+     "uf": "to",
+     "numero": "444",
+     "nome": "MAURICIO BUFFON",
+     "nomeCompleto": "MAURICIO BUFFON",
+     "partido": "PTB",
+     "sqcand": "270001737722"
+    }
+   ]
+  }
+ ]
+}

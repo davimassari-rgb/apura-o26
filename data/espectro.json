@@ -1,0 +1,6 @@
+{
+  "_nota": "Classificação editorial (não é do TSE). Edite à vontade: cada sigla de partido em um dos grupos. Siglas não listadas aparecem como 'Não classificado'.",
+  "esquerda": ["PT", "PSB", "PDT", "REDE", "PSOL", "PCDOB", "PC DO B", "PV", "UP", "PSTU", "PCO", "PCB"],
+  "centro": ["MDB", "PSD", "PODE", "PODEMOS", "PSDB", "CIDADANIA", "SOLIDARIEDADE", "AVANTE", "PRD", "AGIR", "MOBILIZA", "PMB"],
+  "direita": ["PL", "PP", "UNIÃO", "REPUBLICANOS", "NOVO", "MISSÃO", "PRTB", "PSC", "DC", "DEMOCRATA"]
+}

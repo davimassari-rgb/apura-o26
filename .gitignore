@@ -1,0 +1,11 @@
+# cache local das fotos baixadas do TSE (recriado automaticamente pelo servidor)
+data/fotos/
+
+# configuração local do editor/agente
+.claude/
+
+# sistema
+node_modules/
+.DS_Store
+Thumbs.db
+*.log
