@@ -17,8 +17,9 @@
   /* séries do comparativo (validadas: claro) */
   --c-jair22: #5b9cf0; --c-flavio26: #1d4ed8; --c-lula22: #e0823f; --c-lula26: #b91c1c;
 }
+/* tema escuro: segue o sistema, salvo se a pessoa escolheu "Dia" (data-theme="light") */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #0f1115; --card: #181b21; --ink: #eef0f3; --muted: #9aa2b1;
     --line: #2a2f38; --track: #252a33; --accent: #5aa2f0;
     --warn-bg: #2b2414; --warn-line: #7a5d1d;
@@ -26,6 +27,15 @@
     --c-dolar: #2dd4bf; --alta: #4ade80; --baixa: #f87171;
     --c-jair22: #6591e6; --c-flavio26: #2c5bc4; --c-lula22: #d8752f; --c-lula26: #b5352a;
   }
+}
+/* tema escuro escolhido manualmente no botão "Noite" */
+:root[data-theme="dark"] {
+    --bg: #0f1115; --card: #181b21; --ink: #eef0f3; --muted: #9aa2b1;
+    --line: #2a2f38; --track: #252a33; --accent: #5aa2f0;
+    --warn-bg: #2b2414; --warn-line: #7a5d1d;
+    /* séries do comparativo (validadas: escuro) */
+    --c-dolar: #2dd4bf; --alta: #4ade80; --baixa: #f87171;
+    --c-jair22: #6591e6; --c-flavio26: #2c5bc4; --c-lula22: #d8752f; --c-lula26: #b5352a;
 }
 * { box-sizing: border-box; }
 body {
@@ -278,3 +288,7 @@ table.sem-clique td:first-child { white-space: normal; min-width: 160px; }
 .split { display: flex; height: 34px; border-radius: 8px; overflow: hidden; background: var(--track); }
 .split span { display: flex; align-items: center; padding: 0 10px; color: #fff; font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; }
 .split span + span { justify-content: flex-end; border-left: 2px solid var(--card); }
+
+/* ---------- selo oficial e botão de tema ---------- */
+.selo-oficial { display: inline-flex; align-items: center; border-radius: 9px; padding: 7px 14px; font-size: 14px; font-weight: 600; background: var(--accent); color: #fff; }
+.tema button { display: inline-flex; align-items: center; gap: 6px; }

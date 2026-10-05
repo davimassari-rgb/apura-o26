@@ -4,6 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Apuração 2026</title>
+  <script>
+    // aplica o tema salvo antes de desenhar a página (evita piscar claro→escuro)
+    try { const t = localStorage.getItem('tema'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch {}
+  </script>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -16,9 +20,10 @@
       </div>
     </div>
     <div class="controles">
-      <div class="seg" role="group" aria-label="Fonte dos dados">
-        <button data-fonte="tse" class="ativo">Oficial TSE</button>
-        <button data-fonte="demo">Demonstração</button>
+      <span class="selo-oficial" title="Dados oficiais do Tribunal Superior Eleitoral">Oficial TSE</span>
+      <div class="seg tema" role="group" aria-label="Tema da plataforma">
+        <button data-tema="light" title="Tema claro">☀ Dia</button>
+        <button data-tema="dark" title="Tema escuro">☾ Noite</button>
       </div>
       <span class="atualizado" id="atualizado">—</span>
       <button class="btn" id="btnAtualizar" title="Atualizar agora">↻</button>

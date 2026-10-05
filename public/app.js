@@ -320,7 +320,7 @@ function render() {
   } else if (d && !d.disponivel) {
     mostrarAviso(`<b>Aguardando a primeira divulgação do TSE.</b> Os resultados começam a ser publicados após o encerramento da votação (17h de Brasília). O painel é avisado automaticamente assim que o TSE publicar.<br>
       <small>Arquivo monitorado: <code>${esc(d.urlExemplo)}</code></small>
-      <button class="btn" data-fonte-ir="demo">Ver demonstração</button>`);
+`);
   } else mostrarAviso('');
 
   renderBrasil();
@@ -368,6 +368,26 @@ $('#selCargo').addEventListener('change', e => {
   if (estado.dados[estado.cargo]) renderEstados(); else atualizar();
 });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) atualizar(); });
+
+// ---------- tema claro / escuro ----------
+// Sem escolha salva, segue o sistema; o botão marca o tema que está valendo.
+function temaAtual() {
+  const t = document.documentElement.dataset.theme;
+  if (t === 'light' || t === 'dark') return t;
+  return window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+function marcarTema() {
+  document.querySelectorAll('[data-tema]').forEach(b => b.classList.toggle('ativo', b.dataset.tema === temaAtual()));
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-tema]');
+  if (!b) return;
+  document.documentElement.dataset.theme = b.dataset.tema;
+  try { localStorage.setItem('tema', b.dataset.tema); } catch {}
+  marcarTema();
+});
+if (window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', marcarTema);
+marcarTema();
 
 // ---------- início ----------
 (async function init() {
