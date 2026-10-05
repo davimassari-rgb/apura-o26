@@ -21,6 +21,8 @@ Depois abra http://localhost:3000. No Windows, também dá para dar dois cliques
 - **Congresso 2027**: hemiciclos do Senado (81 cadeiras: 54 eleitos em 2026 e 27 com mandato até 2031) e da Câmara (513), com cartões Esquerda/Centro/Direita, cores por espectro ou por partido e o nome de cada parlamentar ao passar o mouse. Ponto cheio = confirmado; ponto vazado = projeção.
 - **2022 × 2026**: Presidente. Compara o 1º turno de 2026 (Flávio e Lula) com o **1º ou o 2º turno de 2022** (Jair e Lula), escolhidos por um seletor no topo da aba. Tem gráfico por Brasil e região, a curva da apuração, a diferença Bolsonaro − Lula por estado e uma tabela completa.
 - **Estados**: Presidente, Governador ou Senador em qualquer UF.
+- **Mercado**: Ibovespa e dólar comercial com cotação, variação, gráfico de 1 dia, 5 dias ou 1 mês, e a **reação ao 1º turno**: a variação desde o último pregão antes de 04/10/2026. Atualiza a cada 30 s.
+- **Apostas**: mercados de previsão da Polymarket e da Kalshi para o vencedor da eleição presidencial e para o 2º turno (Flávio Bolsonaro × Lula), com gráfico de evolução das duas plataformas. Atualiza a cada 30 s.
 
 ## Fonte dos dados
 
@@ -84,3 +86,10 @@ Também há os selos **2º TURNO** (oficial ou `md = "s"`) e **SUB JUDICE**. Ao 
   - O painel "Revisão das 513 cadeiras" confere a cada boletim a projeção contra a lista oficial nos estados já fechados (hoje 264 de 264 iguais), lista os estados ainda em projeção e mostra quem ficou fora por votos anulados.
   - Como cada candidato só disputa um cargo por eleição, nenhum deputado eleito em 2026 deixa a vaga por ter vencido outra disputa. Por isso não existe na Câmara a troca por suplente que acontece no Senado.
 - **Espectro:** a classificação esquerda/centro/direita é **editorial** e fica em `data/espectro.json`. Edite as siglas de cada grupo à vontade.
+
+### Mercado e Apostas
+- **Ibovespa e dólar:** vêm do Yahoo Finance (`query1.finance.yahoo.com/v8/finance/chart`). O Ibovespa tem atraso de até 15 min; o dólar comercial (USD/BRL) é negociado 24 h. A tela é informativa e não é recomendação de investimento.
+- **Polymarket:** evento "Brazil Presidential Election", pela Gamma API (preços) e pelo CLOB (`prices-history`, histórico).
+- **Kalshi:** evento `KXBRPRES-26`, pela Trade API v2 (mercados e `candlesticks`).
+- **2º turno:** como só Flávio Bolsonaro e Lula seguem na disputa, o mercado "quem vence a eleição" das duas plataformas equivale ao 2º turno de 25/10.
+- **DNS público:** `polymarket.com` e `kalshi.com` são bloqueados pelo DNS da rede onde o painel foi montado. Com autorização do responsável, **só esses dois domínios** são resolvidos pelo DNS público (Cloudflare 1.1.1.1 / Google 8.8.8.8) no servidor local; todo o resto usa o DNS do sistema. Na Vercel, fora do Brasil, o desvio não é usado. Para desligar, remova o `lookup` de `obterJSON` em `server.js`.

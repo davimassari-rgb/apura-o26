@@ -11,6 +11,7 @@
   --warn-line: #f5c46b;
   --radius: 12px;
   --eleito: #15803d;
+  --c-dolar: #0f766e; --alta: #15803d; --baixa: #b42318;
   /* espectro (Congresso 2027) */
   --esp-esq: #e5484d; --esp-cen: #94a3b8; --esp-dir: #3b82f6; --esp-out: #c4b5a0;
   /* séries do comparativo (validadas: claro) */
@@ -22,6 +23,7 @@
     --line: #2a2f38; --track: #252a33; --accent: #5aa2f0;
     --warn-bg: #2b2414; --warn-line: #7a5d1d;
     /* séries do comparativo (validadas: escuro) */
+    --c-dolar: #2dd4bf; --alta: #4ade80; --baixa: #f87171;
     --c-jair22: #6591e6; --c-flavio26: #2c5bc4; --c-lula22: #d8752f; --c-lula26: #b5352a;
   }
 }
@@ -250,3 +252,29 @@ table.sem-clique td:first-child { white-space: normal; min-width: 160px; }
 .mud-ic { flex: none; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 12px; background: var(--track); color: var(--ink); }
 .mud-suplente, .mud-suplente-mat { background: var(--eleito); color: #fff; }
 .mud-incerto { background: #b45309; color: #fff; }
+
+/* ---------- Mercado e Apostas ---------- */
+.mercado-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 20px; }
+@media (max-width: 600px) { .mercado-grid { grid-template-columns: 1fr; } }
+.ativo-preco { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-top: 6px; }
+.ativo-preco b { font-size: 40px; font-weight: 800; }
+.ativo-preco small { color: var(--muted); font-size: 14px; }
+.var { font-weight: 700; font-size: 18px; }
+.alta { color: var(--alta); } .baixa { color: var(--baixa); } .neutra { color: var(--muted); }
+.ativo-sub { font-size: 13px; margin: 2px 0 12px; }
+.reacao { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; background: var(--track); border-radius: 10px; padding: 10px 14px; margin-bottom: 10px; }
+.reacao span { font-weight: 700; font-size: 14px; }
+.reacao b { font-size: 18px; }
+.reacao small { color: var(--muted); font-size: 12px; }
+.grafico .linha-ref { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 4; }
+.aposta { margin-top: 12px; }
+.aposta-topo { display: flex; justify-content: space-between; align-items: baseline; }
+.aposta-topo .nm { font-weight: 700; font-size: 16px; display: flex; align-items: center; }
+.aposta-topo b { font-size: 26px; font-weight: 800; }
+.aposta .barra { margin-top: 6px; }
+.aposta-sub { font-size: 13px; margin-top: 4px; }
+.duelo-linha { display: grid; grid-template-columns: 100px 1fr; gap: 12px; align-items: center; margin: 10px 0; }
+.duelo-linha .plat { font-weight: 700; }
+.split { display: flex; height: 34px; border-radius: 8px; overflow: hidden; background: var(--track); }
+.split span { display: flex; align-items: center; padding: 0 10px; color: #fff; font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; }
+.split span + span { justify-content: flex-end; border-left: 2px solid var(--card); }

@@ -3,6 +3,8 @@
 // (resultados.tse.jus.br), mantém um cache curto e agrega os dados por região.
 
 const http = require('http');
+const https = require('https');
+const dns = require('dns');
 const fs = require('fs');
 const path = require('path');
 
@@ -639,6 +641,158 @@ async function congresso() {
   };
 }
 
+// ---------- dados externos: mercado financeiro e mercados de previsão ----------
+// Polymarket e Kalshi são bloqueados pelo DNS da rede local do usuário (bloqueio de apostas
+// no Brasil). Por autorização expressa do usuário, SÓ esses domínios são resolvidos pelo DNS
+// público (Cloudflare 1.1.1.1 / Google 8.8.8.8). Todo o resto usa o DNS do sistema.
+// Na Vercel (fora do Brasil) a resolução normal funciona, então o desvio não é usado lá.
+const DNS_PUBLICO = /(^|\.)(polymarket\.com|kalshi\.com)$/i;
+const resolvedorPublico = new dns.Resolver();
+resolvedorPublico.setServers(['1.1.1.1', '8.8.8.8']);
+const lookupPublico = (host, opts, cb) => resolvedorPublico.resolve4(host, (e, ips) => {
+  if (e) return cb(e);
+  if (opts && opts.all) return cb(null, ips.map(address => ({ address, family: 4 })));
+  cb(null, ips[0], 4);
+});
+const cacheExterno = new Map();
+function obterJSON(url, ttlMs) {
+  const hit = cacheExterno.get(url);
+  if (hit && Date.now() - hit.t < ttlMs) return hit.p;
+  const host = new URL(url).hostname;
+  const p = new Promise((ok, falha) => {
+    const req = https.get(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (painel-apuracao-local)', Accept: 'application/json' },
+      timeout: 12_000,
+      ...(DNS_PUBLICO.test(host) && !SERVERLESS ? { lookup: lookupPublico } : {}),
+    }, res => {
+      let d = '';
+      res.setEncoding('utf8');
+      res.on('data', c => (d += c));
+      res.on('end', () => {
+        if (res.statusCode !== 200) return falha(new Error(`HTTP ${res.statusCode} em ${host}`));
+        try { ok(JSON.parse(d)); } catch (e) { falha(new Error(`resposta inválida de ${host}`)); }
+      });
+    });
+    req.on('timeout', () => req.destroy(new Error(`tempo esgotado em ${host}`)));
+    req.on('error', falha);
+  });
+  // falha não fica em cache; um dado bom anterior continua servindo
+  p.catch(() => { if (cacheExterno.get(url)?.p === p) { if (hit) cacheExterno.set(url, hit); else cacheExterno.delete(url); } });
+  cacheExterno.set(url, { t: Date.now(), p });
+  return p;
+}
+
+// --- Ibovespa e dólar (Yahoo Finance; B3 com atraso de até 15 min) ---
+const ATIVOS = {
+  ibov: { simbolo: '^BVSP', nome: 'Ibovespa', unidade: 'pontos', casas: 0 },
+  dolar: { simbolo: 'BRL=X', nome: 'Dólar comercial (USD/BRL)', unidade: 'R$', casas: 4 },
+};
+const INTERVALOS = { '1d': '5m', '5d': '15m', '1mo': '60m' };
+const DIA_ELEICAO = Date.parse('2026-10-04T00:00:00-03:00');
+const yahoo = (simbolo, range, intervalo) =>
+  `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(simbolo)}?range=${range}&interval=${intervalo}`;
+
+async function ativo(chave, range) {
+  const a = ATIVOS[chave];
+  const [j, diario] = await Promise.all([
+    obterJSON(yahoo(a.simbolo, range, INTERVALOS[range]), 30_000),
+    obterJSON(yahoo(a.simbolo, '1mo', '1d'), 10 * 60_000),
+  ]);
+  const r = j.chart?.result?.[0];
+  if (!r) throw new Error('sem dados para ' + a.nome);
+  const m = r.meta, ts = r.timestamp || [], fech = r.indicators?.quote?.[0]?.close || [];
+  const serie = ts.map((t, i) => [t * 1000, fech[i]]).filter(p => Number.isFinite(p[1]));
+  // último fechamento diário antes do 1º turno (04/10/2026)
+  const d = diario.chart?.result?.[0];
+  const dts = d?.timestamp || [], dfech = d?.indicators?.quote?.[0]?.close || [];
+  let preEleicao = null;
+  // a data do candle diário é a do pregão no fuso da própria bolsa (FX do Yahoo usa meia-noite de Londres)
+  const off = d?.meta?.gmtoffset || 0;
+  const dataPregao = t => new Date((t + off) * 1000).toISOString().slice(0, 10).split('-').reverse().join('/');
+  dts.forEach((t, i) => { if (t * 1000 < DIA_ELEICAO && Number.isFinite(dfech[i])) preEleicao = { data: t * 1000, dataTexto: dataPregao(t), valor: dfech[i] }; });
+  const preco = m.regularMarketPrice;
+  const anterior = range === '1d' ? (m.chartPreviousClose ?? m.previousClose) : (m.chartPreviousClose ?? serie[0]?.[1]);
+  return {
+    chave, nome: a.nome, unidade: a.unidade, casas: a.casas,
+    preco, anterior,
+    variacao: anterior ? ((preco - anterior) / anterior) * 100 : null,
+    hora: (m.regularMarketTime || 0) * 1000,
+    preEleicao,
+    variacaoEleicao: preEleicao ? ((preco - preEleicao.valor) / preEleicao.valor) * 100 : null,
+    serie,
+  };
+}
+async function mercado(range) {
+  if (!INTERVALOS[range]) range = '1d';
+  const res = await Promise.allSettled(Object.keys(ATIVOS).map(k => ativo(k, range)));
+  return {
+    range, consultadoEm: new Date().toISOString(),
+    fonte: 'Yahoo Finance (Ibovespa com atraso de até 15 min; dólar comercial em tempo real)',
+    ativos: res.map((r, i) => (r.status === 'fulfilled' ? r.value : { chave: Object.keys(ATIVOS)[i], nome: Object.values(ATIVOS)[i].nome, erro: r.reason.message })),
+  };
+}
+
+// --- Mercados de previsão: Polymarket e Kalshi (presidente 2026; o 2º turno é Flávio × Lula) ---
+const PERIODOS = { '1d': { pm: '1d', fid: 10, kal: 1, seg: 86400 }, '1w': { pm: '1w', fid: 60, kal: 60, seg: 7 * 86400 }, '1m': { pm: '1m', fid: 360, kal: 1440, seg: 30 * 86400 } };
+// ordem alfabética fixa, como no restante do painel
+const DUELO = [
+  { chave: 'flavio', nome: 'Flávio Bolsonaro', numero: '22', pm: /fl[aá]vio bolsonaro/i, kal: 'KXBRPRES-26-FBOL' },
+  { chave: 'lula', nome: 'Lula', numero: '13', pm: /lula/i, kal: 'KXBRPRES-26-LULA' },
+];
+const num0 = v => { const n = Number(v); return Number.isFinite(n) ? n : null; };
+
+async function polymarket(per) {
+  const busca = await obterJSON('https://gamma-api.polymarket.com/public-search?q=brazil%20presidential%20election&limit_per_type=20', 30_000);
+  const ev = (busca.events || []).find(e => e.slug === 'brazil-presidential-election');
+  if (!ev) throw new Error('evento "Brazil Presidential Election" não encontrado na Polymarket');
+  const abertos = (ev.markets || []).filter(m => !m.closed);
+  const preco = m => { try { return num0(JSON.parse(m.outcomePrices)[0]); } catch { return null; } };
+  const candidatos = await Promise.all(DUELO.map(async d => {
+    const m = abertos.find(x => d.pm.test(x.groupItemTitle || x.question || ''));
+    if (!m) return { ...d, prob: null, historico: [] };
+    let historico = [];
+    try {
+      const token = JSON.parse(m.clobTokenIds)[0];
+      const h = await obterJSON(`https://clob.polymarket.com/prices-history?market=${token}&interval=${PERIODOS[per].pm}&fidelity=${PERIODOS[per].fid}`, 60_000);
+      historico = (h.history || []).map(p => [p.t * 1000, p.p]);
+    } catch {}
+    return { chave: d.chave, nome: d.nome, numero: d.numero, prob: preco(m), var24h: num0(m.oneDayPriceChange), volume: num0(m.volumeNum), historico };
+  }));
+  const outros = abertos.filter(m => !DUELO.some(d => d.pm.test(m.groupItemTitle || '')))
+    .map(m => ({ nome: m.groupItemTitle, prob: preco(m) })).filter(o => o.prob > 0).sort((a, b) => b.prob - a.prob);
+  return { plataforma: 'Polymarket', titulo: ev.title, volume: num0(ev.volume), moeda: 'US$', candidatos, outros, encerramento: ev.endDate };
+}
+
+async function kalshi(per) {
+  const j = await obterJSON('https://api.elections.kalshi.com/trade-api/v2/events?series_ticker=KXBRPRES&with_nested_markets=true', 30_000);
+  const ev = (j.events || []).find(e => e.event_ticker === 'KXBRPRES-26');
+  if (!ev) throw new Error('evento KXBRPRES-26 não encontrado na Kalshi');
+  const fim = Math.floor(Date.now() / 1000), ini = fim - PERIODOS[per].seg;
+  const candidatos = await Promise.all(DUELO.map(async d => {
+    const m = (ev.markets || []).find(x => x.ticker === d.kal);
+    if (!m) return { chave: d.chave, nome: d.nome, numero: d.numero, prob: null, historico: [] };
+    let historico = [];
+    try {
+      const h = await obterJSON(`https://api.elections.kalshi.com/trade-api/v2/series/KXBRPRES/markets/${d.kal}/candlesticks?start_ts=${ini}&end_ts=${fim}&period_interval=${PERIODOS[per].kal}`, 60_000);
+      historico = (h.candlesticks || []).map(c => [c.end_period_ts * 1000, num0(c.price?.close_dollars) ?? num0(c.price?.previous_dollars)]).filter(p => p[1] != null);
+    } catch {}
+    const ultimo = num0(m.last_price_dollars), anterior = num0(m.previous_price_dollars);
+    return { chave: d.chave, nome: d.nome, numero: d.numero, prob: ultimo, var24h: ultimo != null && anterior != null ? ultimo - anterior : null,
+      compra: num0(m.yes_ask_dollars), venda: num0(m.yes_bid_dollars), volume: num0(m.volume_fp), historico };
+  }));
+  const volume = (ev.markets || []).reduce((t, m) => t + (num0(m.volume_fp) || 0), 0);
+  return { plataforma: 'Kalshi', titulo: ev.title, volume, moeda: 'US$', candidatos, outros: [], encerramento: ev.markets?.[0]?.expected_expiration_time };
+}
+
+async function previsoes(per) {
+  if (!PERIODOS[per]) per = '1w';
+  const [pm, ks] = await Promise.allSettled([polymarket(per), kalshi(per)]);
+  return {
+    periodo: per, consultadoEm: new Date().toISOString(),
+    plataformas: [pm, ks].map((r, i) => (r.status === 'fulfilled' ? r.value : { plataforma: i ? 'Kalshi' : 'Polymarket', erro: r.reason.message })),
+  };
+}
+
 // ---------- servidor HTTP ----------
 const MIME = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.json': 'application/json' };
 const PUBLIC = path.join(__dirname, 'public');
@@ -675,6 +829,13 @@ async function handler(req, res) {
     }
     const mFoto = u.pathname.match(/^\/foto\/(\d{3,6})\/([a-z]{2})\/(\d{6,15})\.jpe?g$/);
     if (mFoto) return servirFoto(res, mFoto[1], mFoto[2], mFoto[3]);
+    if (u.pathname === '/api/mercado' || u.pathname === '/api/previsoes') {
+      const data = u.pathname === '/api/mercado'
+        ? await mercado(String(u.searchParams.get('range') || '1d'))
+        : await previsoes(String(u.searchParams.get('periodo') || '1w'));
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+      return res.end(JSON.stringify(data));
+    }
     if (u.pathname === '/api/status') {
       const agora = Date.now();
       const lista = [...arquivos.values()].map(a => ({
