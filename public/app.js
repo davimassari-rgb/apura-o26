@@ -66,7 +66,7 @@ async function buscar(cargo) {
 }
 
 async function atualizar() {
-  if (estado.carregando) return;
+  if (estado.carregando) { estado.recarregar = true; return; }
   estado.carregando = true;
   $('#btnAtualizar').disabled = true;
   try {
@@ -85,6 +85,8 @@ async function atualizar() {
   } finally {
     estado.carregando = false;
     $('#btnAtualizar').disabled = false;
+    // pedido feito durante a consulta (troca de aba, de turno, de estado): refaz para não ficar com dados velhos
+    if (estado.recarregar) { estado.recarregar = false; atualizar(); }
   }
 }
 

@@ -189,6 +189,9 @@ function renderProporcional(aba) {
   }
 
   const totalVotos = d.agremiacoes.reduce((t, a) => t + a.votos, 0);
+  // o redesenho a cada boletim não pode tirar o foco de quem está digitando na busca
+  const ativo = document.activeElement;
+  const cursor = ativo?.id === 'buscaCand' ? [ativo.selectionStart, ativo.selectionEnd] : null;
   el.innerHTML = `${topo}
     <div class="grid-topo">
       <div class="card">
@@ -209,6 +212,7 @@ function renderProporcional(aba) {
         <input type="search" id="buscaCand" placeholder="Buscar por nome, número ou partido" value="${esc(estado.busca)}"></div>
       <div id="listaDep">${listaDeputados(d)}</div>
     </div>`;
+  if (cursor) { const i = $('#buscaCand'); i.focus(); i.setSelectionRange(...cursor); }
 }
 
 // ---------- registro das abas ----------

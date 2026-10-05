@@ -81,7 +81,7 @@ function hemiciclo(casa, d, rotuloCentro) {
   cad.forEach((c, i) => {
     const p = pos[i];
     const cor = corCadeira(c);
-    const tip = esc(`<b>${c.nome}</b>${c.partido ? ` · ${c.partido}` : ''} · ${NOMES_UF[c.uf] || ''}<br>${ROTULO_STATUS[c.status]}${c.nota ? `<br><span class="tip-nota">${c.nota}</span>` : ''}`);
+    const tip = esc(`<b>${esc(c.nome)}</b>${c.partido ? ` · ${esc(c.partido)}` : ''} · ${NOMES_UF[c.uf] || ''}<br>${ROTULO_STATUS[c.status]}${c.nota ? `<br><span class="tip-nota">${esc(c.nota)}</span>` : ''}`);
     const vazado = VAZADO.has(c.status);
     svg += `<circle cx="${(cx + p.x).toFixed(1)}" cy="${(cy + p.y).toFixed(1)}" r="${(vazado ? raioPonto - borda / 2 : raioPonto).toFixed(2)}"
       fill="${vazado ? 'var(--card)' : cor}" stroke="${cor}" stroke-width="${vazado ? borda.toFixed(2) : 0}" class="cadeira" data-tip="${tip}"/>`;
@@ -175,6 +175,8 @@ function renderCongresso() {
   if (estado.fonte === 'demo') { el.innerHTML = '<div class="card vazio">O modo demonstração não cobre o Congresso. Volte para “Oficial TSE”.</div>'; return; }
   if (!d) { el.innerHTML = '<div class="card vazio">Carregando composição do Congresso…</div>'; return; }
   const sen2026 = d.senado.cadeiras.filter(c => c.origem === '2026').length;
+  // o redesenho a cada boletim não deve abrir/fechar as seções que a pessoa mexeu
+  const abertos = [...el.querySelectorAll('details')].map(x => x.open);
   el.innerHTML = `
     <div class="card seletor-turno">
       <div><h2 style="margin:0 0 4px">Congresso em 2027: como fica após as eleições</h2>
@@ -192,6 +194,8 @@ function renderCongresso() {
       Quem não concorreu em 2026 aparece com o partido de 2022. Mudanças fora dos arquivos de eleição (licenças, renúncias, nomeações) ficam em <code>data/senado-ajustes.json</code>.
       <b>A classificação esquerda/centro/direita é editorial</b> e pode ser editada em <code>data/espectro.json</code>.
     </div>`;
+  const ds = el.querySelectorAll('details');
+  if (abertos.length === ds.length) ds.forEach((x, i) => (x.open = abertos[i]));
 }
 
 ABAS_EXTRA.congresso = {

@@ -644,11 +644,11 @@ const MIME = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.html': 'text/html;
 const PUBLIC = path.join(__dirname, 'public');
 
 async function handler(req, res) {
+  try {
   const u = new URL(req.url, 'http://localhost');
   // Vercel: as rotas chegam reescritas para /api/index?__p=<caminho original>
   const caminhoOriginal = u.searchParams.get('__p');
   if (caminhoOriginal !== null) { u.searchParams.delete('__p'); if (u.pathname.startsWith('/api/index')) u.pathname = '/' + caminhoOriginal; }
-  try {
     if (u.pathname === '/api/painel') {
       const cargo = Number(u.searchParams.get('cargo') || 1);
       if (!CARGOS[cargo]) throw Object.assign(new Error('cargo inválido'), { code: 400 });
@@ -700,11 +700,11 @@ async function handler(req, res) {
       return res.end(JSON.stringify({ regioes: REGIOES, cargos: CARGOS, eleicoes: ELEICOES, tseBase: TSE_BASE, tempoReal: SERVERLESS ? 'consulta' : 'eventos' }));
     }
     const file = path.normalize(path.join(PUBLIC, u.pathname === '/' ? 'index.html' : u.pathname));
-    if (!file.startsWith(PUBLIC) || !fs.existsSync(file)) { res.writeHead(404); return res.end('não encontrado'); }
+    if (!file.startsWith(PUBLIC) || !fs.existsSync(file) || !fs.statSync(file).isFile()) { res.writeHead(404); return res.end('não encontrado'); }
     res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream', 'Cache-Control': 'no-cache' });
     fs.createReadStream(file).pipe(res);
   } catch (e) {
-    res.writeHead(e.code || 500, { 'Content-Type': 'application/json' });
+    res.writeHead(typeof e.code === 'number' ? e.code : 500, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ erro: e.message }));
   }
 }
