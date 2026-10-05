@@ -144,11 +144,9 @@ function mostrarRelogio() {
   const el = $('#atualizado');
   if (estado.fonte === 'demo') { el.textContent = 'Dados fictícios'; return; }
   const i = infoAtual();
-  if (!i) { el.textContent = 'Aguardando TSE…'; return; }
-  // texto fixo, sem contadores: só a hora (Brasília) da última verificação, ex.: "9h26"
-  const [h, m] = new Date(i.verificadoEm).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' }).split(':');
-  el.textContent = `Boletim do TSE - ${Number(h)}h${m} última verificação`;
-  el.title = `Último boletim gerado pelo TSE: ${i.boletimTSE}`;
+  if (!i) { el.textContent = 'Boletim TSE'; return; }
+  // só o rótulo; a verificação contínua segue rodando, sem horário na tela
+  el.textContent = 'Boletim TSE';
 }
 
 // ---------- componentes ----------
