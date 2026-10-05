@@ -95,7 +95,6 @@ function agendar() {
   // na Vercel (sem conexões longas) o painel consulta a cada 10 s; localmente usa eventos (SSE)
   const porConsulta = estado.config?.tempoReal === 'consulta';
   estado.timer = setInterval(atualizar, porConsulta ? 10_000 : INTERVALO_MS);
-  setInterval(mostrarRelogio, 1000);
   if (porConsulta) estado.aovivo = true;
   else conectarEventos();
 }
@@ -146,10 +145,10 @@ function mostrarRelogio() {
   if (estado.fonte === 'demo') { el.textContent = 'Dados fictícios'; return; }
   const i = infoAtual();
   if (!i) { el.textContent = 'Aguardando TSE…'; return; }
-  const seg = Math.max(0, Math.round((Date.now() - Date.parse(i.verificadoEm)) / 1000));
-  const prox = Math.max(0, Math.round((Date.parse(i.proximaVerificacao) - Date.now()) / 1000));
-  const hora = i.boletimTSE.split(' ')[1] || i.boletimTSE;
-  el.innerHTML = `Boletim TSE <b>${esc(hora)}</b> · verificado há ${seg}s${prox ? ` · próxima em ${prox}s` : ''}${estado.aovivo ? '' : ' · <span title="Sem conexão de eventos; atualizando a cada 60 s">reconectando…</span>'}`;
+  // texto fixo, sem contadores: só a hora (Brasília) da última verificação, ex.: "9h26"
+  const [h, m] = new Date(i.verificadoEm).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' }).split(':');
+  el.textContent = `Boletim do TSE - ${Number(h)}h${m} última verificação`;
+  el.title = `Último boletim gerado pelo TSE: ${i.boletimTSE}`;
 }
 
 // ---------- componentes ----------
