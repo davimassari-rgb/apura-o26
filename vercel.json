@@ -1,0 +1,17 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "",
+  "installCommand": "",
+  "outputDirectory": "public",
+  "rewrites": [
+    { "source": "/api/:caminho*", "destination": "/api/index?__p=api/:caminho*" },
+    { "source": "/foto/:caminho*", "destination": "/api/index?__p=foto/:caminho*" }
+  ],
+  "functions": {
+    "api/index.js": { "includeFiles": "data/**", "maxDuration": 60 }
+  },
+  "headers": [
+    { "source": "/(.*)\.(js|css|html)", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] }
+  ]
+}

@@ -7,6 +7,11 @@ const fs = require('fs');
 const path = require('path');
 
 const PORT = process.env.PORT || 3000;
+// Na Vercel cada requisição roda numa função: sem processos em segundo plano, sem conexões
+// longas e sem gravar no disco do projeto. Nesse modo os arquivos do TSE são reconferidos
+// sob demanda (ETag) e o navegador consulta a cada poucos segundos em vez de usar SSE.
+const SERVERLESS = !!process.env.VERCEL;
+const FRESCOR_SERVERLESS_MS = 5_000;
 const TSE_BASE = 'https://resultados.tse.jus.br/oficial/ele2026';
 
 // Códigos oficiais do pleito 2026 (fonte: /oficial/comum/config/ele-c.json)
@@ -67,6 +72,11 @@ function fetchTSE(url) {
     a.primeira = verificar(a);
   }
   a.vistoEm = Date.now();
+  if (SERVERLESS && a.v && Date.now() - a.verificadoEm > FRESCOR_SERVERLESS_MS) {
+    // sob demanda: reconfere (304 barato) e reaproveita uma verificação já em andamento
+    a.emCurso ||= verificar(a).finally(() => { a.emCurso = null; });
+    return a.emCurso.then(() => a.v);
+  }
   return a.v ? Promise.resolve(a.v) : a.primeira.then(() => a.v);
 }
 
@@ -108,6 +118,7 @@ async function verificar(a) {
   const teto = a.url.includes('/br/br-') ? 4_000 : emUso ? 8_000 : 30_000;
   proxima = Math.min(teto, Math.max(2_000, proxima));
   a.proximaEm = Date.now() + proxima;
+  if (SERVERLESS) return; // sem agendamento: a próxima requisição reconfere
   if (SEMPRE.test(a.url) || Date.now() - a.vistoEm < OCIOSO_MS) a.timer = setTimeout(() => verificar(a), proxima);
   else arquivos.delete(a.url);
 }
@@ -449,17 +460,19 @@ async function comparativo(turno = 1) {
 
 // grava o histórico de 2026 a cada boletim novo, mesmo sem navegador aberto
 function aoMudarPresidente() { painel(1, false).then(p => registrarHistorico2026(p.brasil)).catch(() => {}); }
-setInterval(aoMudarPresidente, 30_000);
-aoMudarPresidente();
+if (!SERVERLESS) {
+  setInterval(aoMudarPresidente, 30_000);
+  aoMudarPresidente();
+}
 
 // ---------- fotos dos candidatos (proxy do TSE com cache em disco) ----------
 // /foto/<eleição>/<uf>/<sqcand>.jpeg -> ${TSE_BASE}/<eleição>/fotos/<uf>/<sqcand>.jpeg
 // A foto é baixada do TSE uma única vez e guardada em data/fotos/.
-const FOTOS_DIR = path.join(__dirname, 'data', 'fotos');
+const FOTOS_DIR = SERVERLESS ? path.join(require('os').tmpdir(), 'fotos') : path.join(__dirname, 'data', 'fotos');
 const fotosAusentes = new Map(); // url -> quando o TSE respondeu "não existe" (evita repetir)
 async function servirFoto(res, ele, uf, sq) {
   const arq = path.join(FOTOS_DIR, ele, uf, sq + '.jpeg');
-  const enviar = buf => { res.writeHead(200, { 'Content-Type': 'image/jpeg', 'Cache-Control': 'public, max-age=86400' }); res.end(buf); };
+  const enviar = buf => { res.writeHead(200, { 'Content-Type': 'image/jpeg', 'Cache-Control': 'public, max-age=86400, s-maxage=604800' }); res.end(buf); };
   if (fs.existsSync(arq)) return enviar(fs.readFileSync(arq));
   const url = `${TSE_BASE}/${ele}/fotos/${uf}/${sq}.jpeg`;
   if (Date.now() - (fotosAusentes.get(url) || 0) < 10 * 60_000) { res.writeHead(404); return res.end(); }
@@ -467,8 +480,7 @@ async function servirFoto(res, ele, uf, sq) {
     const r = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 (painel-apuracao-local)' }, signal: AbortSignal.timeout(10_000) });
     if (!r.ok || !/image/.test(r.headers.get('content-type') || '')) { fotosAusentes.set(url, Date.now()); res.writeHead(404); return res.end(); }
     const buf = Buffer.from(await r.arrayBuffer());
-    fs.mkdirSync(path.dirname(arq), { recursive: true });
-    fs.writeFileSync(arq, buf);
+    try { fs.mkdirSync(path.dirname(arq), { recursive: true }); fs.writeFileSync(arq, buf); } catch {}
     enviar(buf);
   } catch { res.writeHead(502); res.end(); }
 }
@@ -631,8 +643,11 @@ async function congresso() {
 const MIME = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.json': 'application/json' };
 const PUBLIC = path.join(__dirname, 'public');
 
-http.createServer(async (req, res) => {
+async function handler(req, res) {
   const u = new URL(req.url, 'http://localhost');
+  // Vercel: as rotas chegam reescritas para /api/index?__p=<caminho original>
+  const caminhoOriginal = u.searchParams.get('__p');
+  if (caminhoOriginal !== null) { u.searchParams.delete('__p'); if (u.pathname.startsWith('/api/index')) u.pathname = '/' + caminhoOriginal; }
   try {
     if (u.pathname === '/api/painel') {
       const cargo = Number(u.searchParams.get('cargo') || 1);
@@ -672,6 +687,7 @@ http.createServer(async (req, res) => {
       return res.end(JSON.stringify({ arquivos: lista.length, navegadoresConectados: assinantes.size, lista }, null, 1));
     }
     if (u.pathname === '/api/eventos') {
+      if (SERVERLESS) { res.writeHead(204); return res.end(); }
       res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-store', Connection: 'keep-alive' });
       res.write('retry: 3000\n\n');
       assinantes.add(res);
@@ -681,7 +697,7 @@ http.createServer(async (req, res) => {
     }
     if (u.pathname === '/api/config') {
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-      return res.end(JSON.stringify({ regioes: REGIOES, cargos: CARGOS, eleicoes: ELEICOES, tseBase: TSE_BASE }));
+      return res.end(JSON.stringify({ regioes: REGIOES, cargos: CARGOS, eleicoes: ELEICOES, tseBase: TSE_BASE, tempoReal: SERVERLESS ? 'consulta' : 'eventos' }));
     }
     const file = path.normalize(path.join(PUBLIC, u.pathname === '/' ? 'index.html' : u.pathname));
     if (!file.startsWith(PUBLIC) || !fs.existsSync(file)) { res.writeHead(404); return res.end('não encontrado'); }
@@ -691,6 +707,11 @@ http.createServer(async (req, res) => {
     res.writeHead(e.code || 500, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ erro: e.message }));
   }
-}).listen(PORT, () => {
-  console.log(`\n  Painel de Apuração 2026 rodando em  http://localhost:${PORT}\n  Fonte: ${TSE_BASE}\n`);
-});
+}
+
+module.exports = handler;
+if (require.main === module) {
+  http.createServer(handler).listen(PORT, () => {
+    console.log(`\n  Painel de Apuração 2026 rodando em  http://localhost:${PORT}\n  Fonte: ${TSE_BASE}\n`);
+  });
+}

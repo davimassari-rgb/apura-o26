@@ -90,9 +90,12 @@ async function atualizar() {
 
 function agendar() {
   clearInterval(estado.timer);
-  estado.timer = setInterval(atualizar, INTERVALO_MS);
+  // na Vercel (sem conexões longas) o painel consulta a cada 10 s; localmente usa eventos (SSE)
+  const porConsulta = estado.config?.tempoReal === 'consulta';
+  estado.timer = setInterval(atualizar, porConsulta ? 10_000 : INTERVALO_MS);
   setInterval(mostrarRelogio, 1000);
-  conectarEventos();
+  if (porConsulta) estado.aovivo = true;
+  else conectarEventos();
 }
 
 // Cargos cujos dados cada aba exibe (para decidir se um aviso do servidor interessa)
