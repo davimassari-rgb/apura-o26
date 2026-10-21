@@ -794,7 +794,7 @@ async function previsoes(per) {
 }
 
 // ---------- servidor HTTP ----------
-const MIME = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.json': 'application/json' };
+const MIME = { '.jpg': 'image/jpeg', '.png': 'image/png', '.jpeg': 'image/jpeg', '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.json': 'application/json' };
 const PUBLIC = path.join(__dirname, 'public');
 
 async function handler(req, res) {
