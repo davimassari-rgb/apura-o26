@@ -1,5 +1,5 @@
 // Aba "2022 × 2026": Presidente – Jair (2022) e Flávio (2026) frente a Lula (2022 e 2026).
-// 2026 é sempre o 1º turno; 2022 pode ser o 1º ou o 2º turno (seletor no topo da aba).
+// 2026 é o turno da pasta aberta (1º ou 2º); 2022 pode ser o 1º ou o 2º turno (seletor no topo da aba).
 // Depende de app.js (estado, $, fmt, pct, esc, NOMES_UF, ABAS_EXTRA)
 
 // Paleta validada (scripts/validate_palette.js do skill de dataviz) para claro e escuro.
@@ -10,16 +10,18 @@ const SERIES = [
   { chave: 'lula22', rotulo: 'Lula 2022', curto: 'Lula 22', var: '--c-lula22' },
   { chave: 'lula26', rotulo: 'Lula 2026', curto: 'Lula 26', var: '--c-lula26' },
 ];
-Object.assign(estado, { comp: null, filtroComp: 'todas', zoomCurva: true, turno2022: 1 });
+Object.assign(estado, { comp: null, filtroComp: 'todas', zoomCurva: true, turno2022: estado.turno });
 
 // Rótulo de 2022 conforme o turno escolhido
 const rot22 = () => (estado.turno2022 === 2 ? '2022 (2º turno)' : '2022 (1º turno)');
+const rot26 = () => `2026 (${estado.turno}º turno)`;
 function aplicarTurno() {
   const t = estado.turno2022 === 2 ? ' 2ºT' : '';
   Object.assign(SERIES[0], { rotulo: `Jair Bolsonaro ${rot22()}`, curto: `Jair 22${t}` });
   Object.assign(SERIES[2], { rotulo: `Lula ${rot22()}`, curto: `Lula 22${t}` });
-  Object.assign(SERIES[1], { rotulo: 'Flávio Bolsonaro 2026 (1º turno)' });
-  Object.assign(SERIES[3], { rotulo: 'Lula 2026 (1º turno)' });
+  const t26 = estado.turno === 2 ? ' 2ºT' : '';
+  Object.assign(SERIES[1], { rotulo: `Flávio Bolsonaro ${rot26()}`, curto: `Flávio 26${t26}` });
+  Object.assign(SERIES[3], { rotulo: `Lula ${rot26()}`, curto: `Lula 26${t26}` });
 }
 aplicarTurno();
 
@@ -217,7 +219,7 @@ function tabelaComp(linhas) {
 function renderComparativo() {
   const el = $('#aba-comparativo');
   const d = estado.comp;
-  if (!d) { el.innerHTML = '<div class="card vazio">Carregando comparativo…</div>'; return; }
+  if (!d || (d.turno2026 || 1) !== estado.turno) { el.innerHTML = '<div class="card vazio">Carregando comparativo…</div>'; return; }
   if (!d.disponivel2022) { el.innerHTML = '<div class="card vazio">Arquivo de 2022 não encontrado em <code>data/</code>. Rode <code>node scripts/gerar-2022.js</code>.</div>'; return; }
   const b = { nome: 'Brasil', ...d.brasil };
   const regs = Object.values(d.regioes);
@@ -231,12 +233,15 @@ function renderComparativo() {
   const xMinZoom = h26.length ? Math.max(0, Math.floor((h26[0].pctSecoes - 5) / 5) * 5) : 0;
   const ufsVis = filtro === 'todas' ? ufs : ufs.filter(u => UFS_REGIAO[filtro].includes(u.uf));
 
-  const turnoCarregado = d.turno2022 || 1;
+  const turnoCarregado = d.turno2022 || 1, turno26 = d.turno2026 || 1;
+  const explicacao = turnoCarregado === turno26
+    ? `Mesma fase da eleição: ${turno26}º turno contra ${turno26}º turno.`
+    : turno26 === 1
+      ? 'No 2º turno de 2022 só havia Lula e Jair, então os dois somam 100% dos válidos. Em 2026, no 1º turno, os votos se dividem entre vários candidatos. Compare com isso em mente.'
+      : 'No 2º turno de 2026 só há Flávio e Lula, então os dois somam 100% dos válidos. No 1º turno de 2022 os votos se dividiam entre vários candidatos. Compare com isso em mente.';
   const seletor = `<div class="card seletor-turno">
-      <div><h2 style="margin:0 0 4px">Comparar 2026 (1º turno) com</h2>
-        <span class="muted">${turnoCarregado === 2
-          ? 'No 2º turno de 2022 só havia Lula e Jair, então os dois somam 100% dos válidos. Em 2026, no 1º turno, os votos se dividem entre vários candidatos. Compare com isso em mente.'
-          : 'Mesma fase da eleição: 1º turno contra 1º turno.'}</span></div>
+      <div><h2 style="margin:0 0 4px">Comparar ${rot26()} com</h2>
+        <span class="muted">${explicacao}</span></div>
       <div class="seg">${[1, 2].map(t => `<button data-acao="turno-2022" data-valor="${t}" class="${turnoCarregado === t ? 'ativo' : ''}" ${(d.turnosDisponiveis2022 || [1]).includes(t) ? '' : 'disabled'}>${t}º turno de 2022</button>`).join('')}</div>
     </div>`;
   el.innerHTML = `
@@ -254,7 +259,7 @@ function renderComparativo() {
         <div class="seg"><button data-acao="zoom-curva" data-valor="1" class="${zoom ? 'ativo' : ''}">Trecho com dados de 2026</button><button data-acao="zoom-curva" data-valor="0" class="${zoom ? '' : 'ativo'}">Apuração inteira</button></div></div>
       ${legenda()}
       <div class="grafico-wrap">${curvaApuracao(d.historico2022, d.historico2026, zoom ? xMinZoom : 0)}</div>
-      <p class="nota">Linhas tracejadas: ${rot22()}, histórico oficial do TSE. Linhas contínuas: 2026 (1º turno), gravadas por este painel a cada boletim do TSE desde ${h26.length ? pct(h26[0].pctSecoes, 1) : '—'} das seções. O TSE não publica os boletins anteriores de 2026, então o trecho antes disso não pode ser reconstruído com dados oficiais. Passe o mouse para comparar os dois anos no mesmo ponto da apuração.</p>
+      <p class="nota">Linhas tracejadas: ${rot22()}, histórico oficial do TSE. Linhas contínuas: ${rot26()}, gravadas por este painel a cada boletim do TSE desde ${h26.length ? pct(h26[0].pctSecoes, 1) : '—'} das seções. O TSE não publica os boletins anteriores de 2026, então o trecho antes disso não pode ser reconstruído com dados oficiais. Passe o mouse para comparar os dois anos no mesmo ponto da apuração.</p>
     </div>
     <div class="card">
       <h2>Diferença Bolsonaro − Lula por estado (pontos percentuais)</h2>
@@ -270,7 +275,11 @@ function renderComparativo() {
 }
 
 ABAS_EXTRA.comparativo = {
-  carregar: async () => { const r = await fetch('/api/comparativo?turno2022=' + estado.turno2022); if (r.ok) estado.comp = await r.json(); },
+  carregar: async () => {
+    const turno = estado.turno;
+    const r = await fetch(`/api/comparativo?turno2022=${estado.turno2022}&turno2026=${turno}`);
+    if (r.ok && turno === estado.turno) estado.comp = await r.json();
+  },
   render: renderComparativo,
 };
 

@@ -18,7 +18,7 @@
       <span class="ponto" id="pontoAoVivo"></span>
       <div>
         <h1>Apuração · Eleições 2026</h1>
-        <p class="sub" id="subtitulo">1º turno · 04/10/2026 · Fonte: TSE (resultados.tse.jus.br)</p>
+        <p class="sub" id="subtitulo">2º turno · 25/10/2026 · Fonte: TSE (resultados.tse.jus.br)</p>
       </div>
     </div>
     <div class="controles">
@@ -32,19 +32,14 @@
     </div>
   </header>
 
+  <!-- abas principais: cada turno é uma pasta com as suas subabas -->
   <nav class="abas" role="tablist">
-    <button role="tab" data-aba="brasil" class="ativo">Brasil</button>
-    <button role="tab" data-aba="regioes">Regiões</button>
-    <button role="tab" data-aba="governadores">Governadores</button>
-    <button role="tab" data-aba="senadores">Senadores</button>
-    <button role="tab" data-aba="depfed">Dep. Federais</button>
-    <button role="tab" data-aba="depest">Dep. Estaduais</button>
-    <button role="tab" data-aba="congresso">Congresso 2027</button>
-    <button role="tab" data-aba="comparativo">2022 × 2026</button>
-    <button role="tab" data-aba="estados">Estados</button>
+    <button role="tab" data-turno="2" class="ativo">2º Turno <span class="tag-vivo">ao vivo</span></button>
+    <button role="tab" data-turno="1">1º Turno</button>
     <button role="tab" data-aba="mercado">Mercado</button>
     <button role="tab" data-aba="apostas">Apostas</button>
   </nav>
+  <nav class="subabas" id="subabas" role="tablist"></nav>
 
   <div id="aviso" class="aviso" hidden></div>
 
@@ -90,7 +85,7 @@
           <select id="selCargo">
             <option value="1">Presidente</option>
             <option value="3">Governador</option>
-            <option value="5">Senador</option>
+            <option value="5" data-so-1t>Senador</option>
           </select>
         </label>
       </div>

@@ -24,10 +24,21 @@ const GRADE = {
 // Abas adicionais registram aqui { carregar: async () => {}, render: () => {} }
 const ABAS_EXTRA = {};
 
-const estado = {
-  fonte: 'tse', aba: 'brasil', regiao: 'todas', uf: 'sp', cargo: 1,
-  config: null, dados: {}, cores: new Map(), timer: null, carregando: false,
+// Cada turno é uma "pasta" com as suas subabas. O 2º turno só tem Presidente e Governador.
+const SUBABAS = {
+  2: [['brasil', 'Presidente · Brasil'], ['regioes', 'Regiões'], ['estados', 'Estados'], ['governadores', 'Governadores'], ['comparativo', '2022 × 2026']],
+  1: [['brasil', 'Presidente · Brasil'], ['regioes', 'Regiões'], ['estados', 'Estados'], ['governadores', 'Governadores'], ['senadores', 'Senadores'],
+    ['depfed', 'Dep. Federais'], ['depest', 'Dep. Estaduais'], ['congresso', 'Congresso 2027'], ['comparativo', '2022 × 2026']],
 };
+const ABAS_FORA_TURNO = ['mercado', 'apostas'];
+const DATA_TURNO = { 1: '04/10/2026', 2: '25/10/2026' };
+
+const estado = {
+  fonte: 'tse', turno: 2, aba: 'brasil', abaDoTurno: { 1: 'brasil', 2: 'brasil' }, regiao: 'todas', uf: 'sp', cargo: 1,
+  config: null, porTurno: { 1: {}, 2: {} }, cores: new Map(), timer: null, carregando: false,
+};
+// estado.dados = resultados do turno que está na tela (cada turno guarda os seus)
+Object.defineProperty(estado, 'dados', { get: () => estado.porTurno[estado.turno], set: v => { estado.porTurno[estado.turno] = v; } });
 
 const $ = s => document.querySelector(s);
 const fmt = n => Math.round(n).toLocaleString('pt-BR');
@@ -57,8 +68,9 @@ function corDe(chave) {
 }
 
 // ---------- dados ----------
-async function buscar(cargo) {
+async function buscar(cargo, turno = estado.turno) {
   const q = new URLSearchParams({ cargo });
+  if (turno === 2) q.set('turno', '2');
   if (estado.fonte === 'demo') q.set('demo', '1');
   const r = await fetch('/api/painel?' + q);
   if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -72,8 +84,10 @@ async function atualizar() {
   try {
     const cargos = new Set([1]);
     if (estado.aba === 'estados') cargos.add(estado.cargo);
-    const res = await Promise.all([...cargos].map(c => buscar(c).then(d => [c, d])));
-    for (const [c, d] of res) estado.dados[c] = d;
+    // guarda no turno em que a consulta começou, mesmo que a pessoa troque de turno no meio
+    const alvo = estado.dados, turno = estado.turno;
+    const res = await Promise.all([...cargos].map(c => buscar(c, turno).then(d => [c, d])));
+    for (const [c, d] of res) alvo[c] = d;
     // cores estáveis: ordem do ranking nacional de presidente
     const p = estado.dados[1];
     if (p?.brasil) p.brasil.candidatos.forEach(c => corDe('1-' + c.numero));
@@ -99,9 +113,13 @@ function agendar() {
   else conectarEventos();
 }
 
-// Cargos cujos dados cada aba exibe (para decidir se um aviso do servidor interessa)
+// Arquivos ("turno-cargo") cujos dados cada aba exibe (para decidir se um aviso do servidor interessa)
 function cargosDaAba() {
-  return { governadores: [3], senadores: [5], depfed: [6], depest: [7], congresso: [5, 6], estados: [1, estado.cargo] }[estado.aba] || [1];
+  if (ABAS_FORA_TURNO.includes(estado.aba)) return [];
+  // o Congresso 2027 também depende do 2º turno (senador eleito governador libera a vaga)
+  if (estado.aba === 'congresso') return ['1-5', '1-6', '2-1', '2-3'];
+  const cargos = { governadores: [3], senadores: [5], depfed: [6], depest: [7], estados: [1, estado.cargo] }[estado.aba] || [1];
+  return cargos.map(c => estado.turno + '-' + c);
 }
 
 let fila = null;
@@ -113,7 +131,7 @@ function conectarEventos() {
   es.onmessage = ev => {
     if (estado.fonte !== 'tse') return;
     let msg; try { msg = JSON.parse(ev.data); } catch { return; }
-    if (!msg.cargos.some(c => cargosDaAba().includes(c))) return;
+    if (!(msg.chaves || []).some(c => cargosDaAba().includes(c))) return;
     // no máximo uma recarga a cada 2 s; avisos que chegam no meio são agrupados
     if (fila) return;
     const espera = Math.max(0, 2000 - (Date.now() - (estado.ultimaRecarga || 0)));
@@ -160,9 +178,9 @@ function blocoProgresso(r) {
 }
 
 // Foto oficial do candidato (TSE), servida pelo proxy local /foto/<eleição>/<uf>/<sqcand>.jpeg
-function fotoUrl(cargo, uf, sqcand) {
+function fotoUrl(cargo, uf, sqcand, turno = estado.turno) {
   if (!sqcand || estado.fonte === 'demo' || !estado.config) return '';
-  const ele = estado.config.cargos[cargo]?.eleicao;
+  const ele = (turno === 2 && estado.config.eleicoes2t?.[cargo]) || estado.config.cargos[cargo]?.eleicao;
   return ele ? `/foto/${ele}/${uf}/${sqcand}.jpeg` : '';
 }
 // Avatar: iniciais na cor do candidato, cobertas pela foto quando ela existe
@@ -288,12 +306,18 @@ function renderRegioes() {
 }
 
 function renderEstados() {
+  // Senador não tem 2º turno
+  document.querySelectorAll('#selCargo [data-so-1t]').forEach(o => (o.disabled = o.hidden = estado.turno === 2));
+  $('#selCargo').value = String(estado.cargo);
   const d = estado.dados[estado.cargo];
   const r = d?.ufs?.[estado.uf];
-  $('#ufTitulo').textContent = `${d?.cargoNome || ''} · ${NOMES_UF[estado.uf]}`;
+  const semDisputa = d && d.ufsEmDisputa && !d.ufsEmDisputa.includes(estado.uf);
+  $('#ufTitulo').textContent = `${d?.cargoNome || ''} · ${NOMES_UF[estado.uf]} · ${estado.turno}º turno`;
   $('#ufProgresso').innerHTML = blocoProgresso(r);
   $('#ufCandidatos').innerHTML = r ? listaCandidatos(r, estado.cargo, estado.cargo === 1 ? 'br' : estado.uf)
-    : '<div class="vazio">Aguardando divulgação do TSE para este estado.</div>';
+    : semDisputa
+      ? `<div class="vazio">${NOMES_UF[estado.uf]} definiu o governador no 1º turno: não há 2º turno para governador neste estado.<br>Estados com 2º turno: ${d.ufsEmDisputa.map(u => NOMES_UF[u]).sort((a, b) => a.localeCompare(b, 'pt-BR')).join(', ')}.</div>`
+      : '<div class="vazio">Aguardando divulgação do TSE para este estado.</div>';
   $('#ufNumeros').innerHTML = blocoNumeros(r);
 }
 
@@ -310,11 +334,11 @@ function render() {
   mostrarRelogio();
   $('#subtitulo').textContent = demo
     ? 'MODO DEMONSTRAÇÃO · dados fictícios, apenas para testar o painel'
-    : '1º turno · 04/10/2026 · Fonte oficial: TSE (resultados.tse.jus.br)';
+    : `${estado.turno}º turno · ${DATA_TURNO[estado.turno]} · Fonte oficial: TSE (resultados.tse.jus.br)`;
 
   if (demo) {
     mostrarAviso('<b>Modo demonstração:</b> os números e candidatos abaixo são <b>fictícios</b> e servem só para visualizar o painel. <button class="btn" data-fonte-ir="tse">Voltar ao oficial</button>');
-  } else if (d && !d.disponivel) {
+  } else if (d && !d.disponivel && !ABAS_FORA_TURNO.includes(estado.aba)) {
     mostrarAviso(`<b>Aguardando a primeira divulgação do TSE.</b> Os resultados começam a ser publicados após o encerramento da votação (17h de Brasília). O painel é avisado automaticamente assim que o TSE publicar.<br>
       <small>Arquivo monitorado: <code>${esc(d.urlExemplo)}</code></small>
 `);
@@ -327,9 +351,32 @@ function render() {
 }
 
 // ---------- eventos ----------
+// Abas principais (2º turno, 1º turno, Mercado, Apostas) e subabas do turno escolhido
+function marcarAbas() {
+  const fora = ABAS_FORA_TURNO.includes(estado.aba);
+  document.querySelectorAll('.abas button').forEach(b => b.classList.toggle('ativo',
+    fora ? b.dataset.aba === estado.aba : Number(b.dataset.turno) === estado.turno));
+  const sub = $('#subabas');
+  sub.hidden = fora;
+  sub.innerHTML = fora ? '' : SUBABAS[estado.turno].map(([k, n]) =>
+    `<button role="tab" data-aba="${k}" class="${k === estado.aba ? 'ativo' : ''}">${n}</button>`).join('');
+}
+function trocarTurno(turno) {
+  if (!ABAS_FORA_TURNO.includes(estado.aba)) estado.abaDoTurno[estado.turno] = estado.aba;
+  estado.turno = turno;
+  // o 2º turno não tem Senador: volta para Presidente na aba Estados
+  if (turno === 2 && !estado.config?.eleicoes2t?.[estado.cargo]) estado.cargo = 1;
+  // compara com a mesma fase de 2022 por padrão (1º com 1º, 2º com 2º)
+  if (typeof aplicarTurno === 'function') { estado.turno2022 = turno; aplicarTurno(); }
+  const aba = estado.abaDoTurno[turno];
+  trocarAba(SUBABAS[turno].some(([k]) => k === aba) ? aba : 'brasil');
+  render();
+  atualizar();
+}
 function trocarAba(aba) {
   estado.aba = aba;
-  document.querySelectorAll('.abas button').forEach(b => b.classList.toggle('ativo', b.dataset.aba === aba));
+  if (!ABAS_FORA_TURNO.includes(aba)) estado.abaDoTurno[estado.turno] = aba;
+  marcarAbas();
   document.querySelectorAll('.aba').forEach(s => (s.hidden = s.id !== 'aba-' + aba));
   if (aba === 'estados' && !estado.dados[estado.cargo]) atualizar();
   else if (ABAS_EXTRA[aba]) { ABAS_EXTRA[aba].render(); atualizar(); }
@@ -351,7 +398,8 @@ function irParaUF(uf, cargo) {
 document.addEventListener('click', e => {
   const t = e.target.closest('button, tr');
   if (!t) return;
-  if (t.dataset.aba) trocarAba(t.dataset.aba);
+  if (t.dataset.turno) trocarTurno(Number(t.dataset.turno));
+  else if (t.dataset.aba) trocarAba(t.dataset.aba);
   else if (t.dataset.fonte) trocarFonte(t.dataset.fonte);
   else if (t.dataset.fonteIr) trocarFonte(t.dataset.fonteIr);
   else if (t.dataset.regiao) { estado.regiao = t.dataset.regiao; if (estado.aba !== 'regioes') trocarAba('regioes'); renderRegioes(); }
@@ -393,6 +441,7 @@ marcarTema();
   $('#selUF').value = estado.uf;
   try { estado.config = await (await fetch('/api/config')).json(); } catch {}
   $('#rodapeUrl').textContent = estado.config ? `Base: ${estado.config.tseBase}` : '';
+  marcarAbas();
   await atualizar();
   agendar();
 })();

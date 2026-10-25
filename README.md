@@ -14,6 +14,18 @@ Depois abra http://localhost:3000. No Windows, também dá para dar dois cliques
 
 ## Abas
 
+O painel tem quatro abas principais: **2º Turno** (aberta ao entrar, com a apuração de 25/10/2026 ao vivo), **1º Turno** (pasta com todos os resultados de 04/10/2026), **Mercado** e **Apostas**.
+
+### 2º Turno (25/10/2026)
+
+Arquivos oficiais do TSE das eleições 6258 (Presidente) e 6260 (Governador), códigos listados como `cdt2` em `/oficial/comum/config/ele-c.json`.
+
+- **Presidente · Brasil**, **Regiões** e **Estados**: Flávio Bolsonaro × Lula, com o mesmo monitoramento em tempo real do 1º turno.
+- **Governadores**: só os estados onde houve 2º turno (AC, AM, DF, ES, RN e TO).
+- **2022 × 2026**: compara o 2º turno de 2026 com o 2º turno de 2022 (ou com o 1º, pelo seletor). A curva de 2026 é gravada em `data/2026-historico-br-2t.json` a cada boletim.
+
+### 1º Turno (04/10/2026)
+
 - **Brasil**: Presidente com total nacional, % de seções totalizadas, mapa de quem lidera em cada estado e números de comparecimento.
 - **Regiões**: Norte, Nordeste, Centro-Oeste, Sudeste e Sul. Tem uma tabela comparativa e, ao escolher uma região, o detalhe estado por estado.
 - **Governadores** e **Senadores**: as 27 UFs lado a lado, com filtro por região e um resumo por partido. Em 2026 são 2 vagas de senador por estado. Clique em um estado para ver todos os candidatos.
@@ -21,6 +33,10 @@ Depois abra http://localhost:3000. No Windows, também dá para dar dois cliques
 - **Congresso 2027**: hemiciclos do Senado (81 cadeiras: 54 eleitos em 2026 e 27 com mandato até 2031) e da Câmara (513), com cartões Esquerda/Centro/Direita, cores por espectro ou por partido e o nome de cada parlamentar ao passar o mouse. Ponto cheio = confirmado; ponto vazado = projeção.
 - **2022 × 2026**: Presidente. Compara o 1º turno de 2026 (Flávio e Lula) com o **1º ou o 2º turno de 2022** (Jair e Lula), escolhidos por um seletor no topo da aba. Tem gráfico por Brasil e região, a curva da apuração, a diferença Bolsonaro − Lula por estado e uma tabela completa.
 - **Estados**: Presidente, Governador ou Senador em qualquer UF.
+- O **Congresso 2027** também lê o 2º turno: se um senador com mandato até 2031 vencer o governo no 2º turno, a cadeira passa ao suplente.
+
+### Fora dos turnos
+
 - **Mercado**: Ibovespa e dólar comercial com cotação, variação, gráfico de 1 dia, 5 dias ou 1 mês, e a **reação ao 1º turno**: a variação desde o último pregão antes de 04/10/2026. Atualiza a cada 30 s.
 - **Apostas**: mercados de previsão da Polymarket e da Kalshi para o vencedor da eleição presidencial e para o 2º turno (Flávio Bolsonaro × Lula), com gráfico de evolução das duas plataformas. Atualiza a cada 30 s.
 

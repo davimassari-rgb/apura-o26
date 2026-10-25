@@ -29,6 +29,10 @@ const CARGOS = {
   7: { nome: 'Deputado Estadual', eleicao: ELEICOES.estadual, proporcional: true },
   8: { nome: 'Deputado Distrital', eleicao: ELEICOES.estadual, proporcional: true },
 };
+// 2º turno (campo cdt2 do ele-c.json): Presidente em todo o país (6258) e Governador (6260)
+// só nas UFs listadas pelo TSE para o 2º turno estadual de 25/10/2026.
+const ELEICOES_2T = { 1: '6258', 3: '6260' };
+const UFS_GOV_2T = ['ac', 'am', 'df', 'es', 'rn', 'to'];
 // No DF, a Câmara Legislativa (Distrital, cargo 8) faz o papel de Deputado Estadual (7)
 const cargoNaUF = (cargo, uf) => (cargo === 7 && uf === 'df' ? 8 : cargo);
 
@@ -49,9 +53,9 @@ const num = v => {
 const pad4 = n => String(n).padStart(4, '0');
 const pad6 = n => String(n).padStart(6, '0');
 
-function arquivoResultado(uf, cargo) {
+function arquivoResultado(uf, cargo, turno = 1) {
   cargo = cargoNaUF(cargo, uf);
-  const ele = CARGOS[cargo].eleicao;
+  const ele = turno === 2 ? ELEICOES_2T[cargo] : CARGOS[cargo].eleicao;
   return `${TSE_BASE}/${ele}/dados/${uf}/${uf}-c${pad4(cargo)}-e${pad6(ele)}-u.json`;
 }
 
@@ -60,11 +64,16 @@ function arquivoResultado(uf, cargo) {
 // com requisição condicional (ETag -> 304 quando nada mudou). Quando o conteúdo muda,
 // os navegadores conectados são avisados na hora via Server-Sent Events (/api/eventos).
 const arquivos = new Map();          // url -> estado do arquivo monitorado
-const SEMPRE = /-c0001-e006257-u\.json$/; // Presidente: monitorado o tempo todo
+const SEMPRE = /-c0001-e00625[78]-u\.json$/; // Presidente (1º e 2º turno): monitorado o tempo todo
 const OCIOSO_MS = 10 * 60_000;       // para de monitorar o que ninguém consulta há 10 min
 const assinantes = new Set();        // respostas SSE abertas
 
-const cargoDaUrl = url => { const c = Number((url.match(/-c(\d{4})-/) || [])[1]); return c === 8 ? 7 : c; };
+// chave "turno-cargo" de um arquivo (ex.: "2-1" = Presidente no 2º turno)
+const chaveDaUrl = url => {
+  const c = Number((url.match(/-c(\d{4})-/) || [])[1]);
+  const t = Object.values(ELEICOES_2T).some(e => url.includes(`-e00${e}-`)) ? 2 : 1;
+  return `${t}-${c === 8 ? 7 : c}`;
+};
 
 function fetchTSE(url) {
   let a = arquivos.get(url);
@@ -128,14 +137,14 @@ async function verificar(a) {
 // agrupa mudanças por 1,5 s para mandar um único aviso por rodada de boletins
 let pendentes = new Set(), timerAviso = null;
 function avisar(url) {
-  pendentes.add(cargoDaUrl(url));
+  pendentes.add(chaveDaUrl(url));
   if (timerAviso) return;
   timerAviso = setTimeout(() => {
-    const cargos = [...pendentes];
-    const msg = JSON.stringify({ cargos, em: new Date().toISOString() });
+    const chaves = [...pendentes];
+    const msg = JSON.stringify({ chaves, em: new Date().toISOString() });
     pendentes = new Set(); timerAviso = null;
     for (const res of assinantes) res.write(`data: ${msg}\n\n`);
-    if (cargos.includes(1)) aoMudarPresidente();
+    for (const t of [1, 2]) if (chaves.includes(t + '-1')) aoMudarPresidente(t);
   }, 1500);
 }
 
@@ -311,14 +320,16 @@ function demoUF(uf, cargo) {
 }
 
 // ---------- montagem das respostas ----------
-async function painel(cargo, demo) {
+// arquivos que compõem o painel: Presidente = 27 UFs + Brasil + exterior; Governador no 2º turno = só as UFs em disputa
+const alvosPainel = (cargo, turno) => (cargo === 1 ? [...UFS, 'br', 'zz'] : turno === 2 ? UFS_GOV_2T : UFS);
+async function painel(cargo, demo, turno = 1) {
   let porUF = {};
   let brasil = null, exterior = null, status = {};
   if (demo) {
     for (const uf of UFS) porUF[uf] = demoUF(uf, cargo);
   } else {
-    const alvos = cargo === 1 ? [...UFS, 'br', 'zz'] : UFS;
-    const res = await Promise.all(alvos.map(uf => fetchTSE(arquivoResultado(uf, cargo))));
+    const alvos = alvosPainel(cargo, turno);
+    const res = await Promise.all(alvos.map(uf => fetchTSE(arquivoResultado(uf, cargo, turno))));
     alvos.forEach((uf, i) => {
       status[uf] = res[i].ok ? 200 : res[i].status;
       if (!res[i].ok) return;
@@ -348,12 +359,13 @@ async function painel(cargo, demo) {
   }
   return {
     fonte: demo ? 'demonstracao' : 'tse',
-    cargo, cargoNome: CARGOS[cargo].nome,
+    cargo, cargoNome: CARGOS[cargo].nome, turno,
+    ufsEmDisputa: cargo === 1 ? UFS : turno === 2 ? UFS_GOV_2T : UFS,
     consultadoEm: new Date().toISOString(),
     disponivel: Object.keys(porUF).length > 0 || !!brasil,
     brasil, exterior, ufs: porUF, regioes, status,
-    urlExemplo: arquivoResultado('br', 1),
-    atualizacao: demo ? null : infoAtualizacao((cargo === 1 ? [...UFS, 'br', 'zz'] : UFS).map(uf => arquivoResultado(uf, cargo))),
+    urlExemplo: arquivoResultado(cargo === 1 ? 'br' : alvosPainel(cargo, turno)[0], cargo, turno),
+    atualizacao: demo ? null : infoAtualizacao(alvosPainel(cargo, turno).map(uf => arquivoResultado(uf, cargo, turno))),
   };
 }
 
@@ -417,17 +429,19 @@ const lerJSON = (f, padrao) => { try { return JSON.parse(fs.readFileSync(path.jo
 // 2022 por turno: 1 = 1º turno (02/10/2022), 2 = 2º turno (30/10/2022)
 const P22 = { 1: lerJSON('2022-presidente-1t.json', null), 2: lerJSON('2022-presidente-2t.json', null) };
 const H22 = { 1: lerJSON('2022-historico-br-1t.json', { pontos: [] }), 2: lerJSON('2022-historico-br-2t.json', { pontos: [] }) };
-const ARQ_H26 = '2026-historico-br-1t.json';
-const H26 = lerJSON(ARQ_H26, { fonte: 'Gravado localmente a partir dos arquivos do TSE durante a apuração', pontos: [] });
+const ARQ_H26 = { 1: '2026-historico-br-1t.json', 2: '2026-historico-br-2t.json' };
+const novoH26 = () => ({ fonte: 'Gravado localmente a partir dos arquivos do TSE durante a apuração', pontos: [] });
+const H26 = { 1: lerJSON(ARQ_H26[1], novoH26()), 2: lerJSON(ARQ_H26[2], novoH26()) };
 const NUM = { lula: '13', flavio: '22' };
 
-function registrarHistorico2026(brasil) {
+function registrarHistorico2026(brasil, turno = 1) {
   if (!brasil?.secoesTotalizadas) return;
   const pct = c => brasil.candidatos.find(x => x.numero === c)?.pct ?? 0;
-  const ult = H26.pontos[H26.pontos.length - 1];
+  const h = H26[turno];
+  const ult = h.pontos[h.pontos.length - 1];
   if (ult && ult.pctSecoes >= brasil.pctSecoes) return;
-  H26.pontos.push({ hora: new Date().toISOString(), pctSecoes: brasil.pctSecoes, lula: pct(NUM.lula), flavio: pct(NUM.flavio) });
-  try { fs.writeFileSync(path.join(DATA_DIR, ARQ_H26), JSON.stringify(H26)); } catch {}
+  h.pontos.push({ hora: new Date().toISOString(), pctSecoes: brasil.pctSecoes, lula: pct(NUM.lula), flavio: pct(NUM.flavio) });
+  try { fs.writeFileSync(path.join(DATA_DIR, ARQ_H26[turno]), JSON.stringify(h)); } catch {}
 }
 
 function linha22(ufs, turno) {
@@ -441,30 +455,30 @@ function linha26(r) {
   return { sqLula26: c(NUM.lula)?.sqcand, sqFlavio26: c(NUM.flavio)?.sqcand, lula26: c(NUM.lula)?.pct ?? null, flavio26: c(NUM.flavio)?.pct ?? null, votosLula26: c(NUM.lula)?.votos ?? 0, votosFlavio26: c(NUM.flavio)?.votos ?? 0, pctSecoes26: r.pctSecoes };
 }
 
-async function comparativo(turno = 1) {
-  const p = await painel(1, false);
-  registrarHistorico2026(p.brasil);
+async function comparativo(turno = 1, turno26 = 1) {
+  const p = await painel(1, false, turno26);
+  registrarHistorico2026(p.brasil, turno26);
   const ufs = {}, regioes = {};
   for (const uf of UFS) ufs[uf] = { ...linha22([uf], turno), ...linha26(p.ufs[uf]) };
   for (const [k, r] of Object.entries(REGIOES)) regioes[k] = { nome: r.nome, ...linha22(r.ufs, turno), ...linha26(p.regioes[k]) };
   return {
     consultadoEm: new Date().toISOString(),
     atualizacao: p.atualizacao,
-    turno2022: turno, turnosDisponiveis2022: [1, 2].filter(t => P22[t]),
+    turno2022: turno, turno2026: turno26, turnosDisponiveis2022: [1, 2].filter(t => P22[t]),
     disponivel2022: !!P22[turno], disponivel2026: p.disponivel,
     brasil: { ...linha22([...UFS, 'zz'], turno), ...linha26(p.brasil) },
     exterior: { ...linha22(['zz'], turno), ...linha26(p.exterior) },
     regioes, ufs,
-    historico2022: H22[turno].pontos, historico2026: H26.pontos,
-    fontes: { y2022: P22[turno]?.fonte, historico2022: H22[turno].fonte, historico2026: H26.fonte },
+    historico2022: H22[turno].pontos, historico2026: H26[turno26].pontos,
+    fontes: { y2022: P22[turno]?.fonte, historico2022: H22[turno].fonte, historico2026: H26[turno26].fonte },
   };
 }
 
 // grava o histórico de 2026 a cada boletim novo, mesmo sem navegador aberto
-function aoMudarPresidente() { painel(1, false).then(p => registrarHistorico2026(p.brasil)).catch(() => {}); }
+function aoMudarPresidente(turno = 1) { painel(1, false, turno).then(p => registrarHistorico2026(p.brasil, turno)).catch(() => {}); }
 if (!SERVERLESS) {
-  setInterval(aoMudarPresidente, 30_000);
-  aoMudarPresidente();
+  setInterval(() => { aoMudarPresidente(1); aoMudarPresidente(2); }, 30_000);
+  aoMudarPresidente(1); aoMudarPresidente(2);
 }
 
 // ---------- fotos dos candidatos (proxy do TSE com cache em disco) ----------
@@ -505,8 +519,10 @@ const chaveNome = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]
 
 async function candidaturas2026(ufs) {
   const lista = [];
-  const add = (uf, cargoNome, r, c, papel, pessoa) => lista.push({
-    uf, cargoNome, papel, chave: chaveNome(pessoa.nomeCompleto), nome: pessoa.nome, partido: pessoa.partido,
+  const add = (uf, cargoNome, r, c, papel, pessoa, turno = 1) => lista.push({
+    uf, cargoNome, papel, turno,
+    // 2º turno: perdeu se o TSE já marcou "não eleito" ou se o adversário já está eleito
+    derrotado: turno === 2 && (/não eleito/i.test(c.situacao || '') || r.candidatos.some(o => o !== c && (o.eleito || o.eleitoMat))), chave: chaveNome(pessoa.nomeCompleto), nome: pessoa.nome, partido: pessoa.partido,
     // situação da chapa/candidato
     eleito: !!c.eleito, eleitoMat: !!c.eleitoMat, segundoTurno: !!(c.segundoTurno || c.segundoTurnoMat),
     projetado: !!c.projetado, naoEleito: /não eleito/i.test(c.situacao || ''), pctApurado: r.pctSecoes,
@@ -520,6 +536,17 @@ async function candidaturas2026(ufs) {
   for (const [uf, r] of Object.entries(gov.ufs)) for (const c of r.candidatos) {
     add(uf, 'Governador', r, c, 'titular', { nome: c.nome, nomeCompleto: c.nomeCompleto, partido: c.partidoSigla });
     for (const v of c.vices) if (v.tipo === 'v') add(uf, 'Vice-Governador', r, c, 'vice', v);
+  }
+  // 2º turno (25/10/2026): Presidente e Governador nas UFs em disputa
+  const pres2 = await painel(1, false, 2);
+  if (pres2.brasil) for (const c of pres2.brasil.candidatos) {
+    add('br', 'Presidente', pres2.brasil, c, 'titular', { nome: c.nome, nomeCompleto: c.nomeCompleto, partido: c.partidoSigla }, 2);
+    for (const v of c.vices) add('br', 'Vice-Presidente', pres2.brasil, c, 'vice', v, 2);
+  }
+  const gov2 = await painel(3, false, 2);
+  for (const [uf, r] of Object.entries(gov2.ufs)) for (const c of r.candidatos) {
+    add(uf, 'Governador', r, c, 'titular', { nome: c.nome, nomeCompleto: c.nomeCompleto, partido: c.partidoSigla }, 2);
+    for (const v of c.vices) if (v.tipo === 'v') add(uf, 'Vice-Governador', r, c, 'vice', v, 2);
   }
   for (const uf of new Set(ufs)) for (const cargo of [6, 7]) {
     const f = await fetchTSE(arquivoResultado(uf, cargo));
@@ -556,7 +583,8 @@ function cadeiraMandato2031(x, candidaturas, AJ) {
     return { ...base, nome: sup.nome, partido: sup.partido, status: venceu.eleito ? 'suplente' : 'suplente-mat',
       nota: `Assume como ${sup.ordem}º suplente de ${x.nome}, eleito ${venceu.cargoNome.toLowerCase()} (${venceu.uf.toUpperCase()}) em 2026 ${venceu.eleito ? '(oficial TSE)' : '(matematicamente)'}. Partido do suplente: ${sup.partidoFonte}.` };
   }
-  const segundo = minhas.find(c => c.segundoTurno);
+  // foi ao 2º turno e ainda não perdeu (sem resultado final do 2º turno, segue incerto)
+  const segundo = minhas.find(c => c.segundoTurno && !minhas.some(o => o.turno === 2 && o.cargoNome === c.cargoNome && o.derrotado));
   if (segundo) {
     return { ...base, nome: x.nome, partido: segundo.partido, status: 'incerto',
       nota: `Disputa o 2º turno para ${segundo.cargoNome.toLowerCase()}. Se vencer, assume o ${sup ? `${sup.ordem}º suplente ${sup.nome} (${sup.partido})` : 'suplente'}. Partido: candidatura de 2026.` };
@@ -805,15 +833,16 @@ async function handler(req, res) {
   if (caminhoOriginal !== null) { u.searchParams.delete('__p'); if (u.pathname.startsWith('/api/index')) u.pathname = '/' + caminhoOriginal; }
     if (u.pathname === '/api/painel') {
       const cargo = Number(u.searchParams.get('cargo') || 1);
-      if (!CARGOS[cargo]) throw Object.assign(new Error('cargo inválido'), { code: 400 });
-      const data = await painel(cargo, u.searchParams.get('demo') === '1');
+      const turno = u.searchParams.get('turno') === '2' ? 2 : 1;
+      if (!CARGOS[cargo] || (turno === 2 && !ELEICOES_2T[cargo])) throw Object.assign(new Error('cargo inválido'), { code: 400 });
+      const data = await painel(cargo, u.searchParams.get('demo') === '1', turno);
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
       return res.end(JSON.stringify(data));
     }
     if (u.pathname === '/api/proporcional' || u.pathname === '/api/bancada' || u.pathname === '/api/comparativo' || u.pathname === '/api/congresso') {
       let data;
       if (u.pathname === '/api/congresso') data = await congresso();
-      else if (u.pathname === '/api/comparativo') data = await comparativo(u.searchParams.get('turno2022') === '2' ? 2 : 1);
+      else if (u.pathname === '/api/comparativo') data = await comparativo(u.searchParams.get('turno2022') === '2' ? 2 : 1, u.searchParams.get('turno2026') === '2' ? 2 : 1);
       else {
         const cargo = Number(u.searchParams.get('cargo') || 6);
         if (![6, 7].includes(cargo)) throw Object.assign(new Error('cargo inválido'), { code: 400 });
@@ -858,7 +887,7 @@ async function handler(req, res) {
     }
     if (u.pathname === '/api/config') {
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-      return res.end(JSON.stringify({ regioes: REGIOES, cargos: CARGOS, eleicoes: ELEICOES, tseBase: TSE_BASE, tempoReal: SERVERLESS ? 'consulta' : 'eventos' }));
+      return res.end(JSON.stringify({ regioes: REGIOES, cargos: CARGOS, eleicoes: ELEICOES, eleicoes2t: ELEICOES_2T, ufsGov2t: UFS_GOV_2T, tseBase: TSE_BASE, tempoReal: SERVERLESS ? 'consulta' : 'eventos' }));
     }
     const file = path.normalize(path.join(PUBLIC, u.pathname === '/' ? 'index.html' : u.pathname));
     if (!file.startsWith(PUBLIC) || !fs.existsSync(file) || !fs.statSync(file).isFile()) { res.writeHead(404); return res.end('não encontrado'); }

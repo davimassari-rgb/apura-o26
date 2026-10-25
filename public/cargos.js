@@ -71,15 +71,20 @@ function renderMajoritario(aba) {
   const el = $('#aba-' + aba);
   const d = estado.dados[cargo];
   const titulo = cargo === 3 ? 'Governadores' : 'Senadores';
+  const segundo = estado.turno === 2;
   const nota = cargo === 5
     ? 'Em 2026 cada estado elege <b>2 senadores</b>. Os dois mais votados aparecem como “na vaga”.'
-    : 'Vence no 1º turno quem tiver mais de 50% dos votos válidos. Se ninguém tiver, há 2º turno.';
+    : segundo
+      ? 'No 2º turno vence quem tiver mais votos válidos. Só aparecem os estados onde houve 2º turno para governador; os demais definiram no 1º turno (veja a pasta 1º Turno).'
+      : 'Vence no 1º turno quem tiver mais de 50% dos votos válidos. Se ninguém tiver, há 2º turno.';
   if (!d) { el.innerHTML = `<div class="card vazio">Carregando ${titulo.toLowerCase()}…</div>`; return; }
-  const ufs = ufsFiltradas(estado.filtroGrade);
+  // no 2º turno, só as UFs em disputa
+  const ufs = ufsFiltradas(estado.filtroGrade).filter(uf => !segundo || (d.ufsEmDisputa || []).includes(uf));
   // resumo: partidos à frente
   const lideres = new Map();
   for (const uf of Object.keys(NOMES_UF)) {
     const r = d.ufs?.[uf];
+    if (!r) continue;
     const vagas = cargo === 5 ? (r?.vagas || 2) : 1;
     for (const c of (r?.candidatos || []).slice(0, vagas)) {
       if (!c.votos) continue;
@@ -91,7 +96,7 @@ function renderMajoritario(aba) {
     `<span class="pill"><i class="cor-dot" style="background:${corPartido(s)}"></i>${esc(s)} <b>${n}</b></span>`).join('');
   el.innerHTML = `
     <div class="card">
-      <h2>${titulo} · ${cargo === 5 ? 'cadeiras em disputa ocupadas agora por partido' : 'estados liderados por partido'}</h2>
+      <h2>${titulo}${segundo ? ' · 2º turno' : ''} · ${cargo === 5 ? 'cadeiras em disputa ocupadas agora por partido' : 'estados liderados por partido'}</h2>
       <div class="pills">${resumo || '<span class="vazio">Aguardando votos.</span>'}</div>
       <p class="nota">${nota} Clique em um estado para ver todos os candidatos.</p>
       ${(() => {
@@ -100,7 +105,8 @@ function renderMajoritario(aba) {
       })()}
     </div>
     ${chipsRegiao(estado.filtroGrade, 'filtro-grade')}
-    <div class="uf-grid">${ufs.map(uf => cardMajoritario(cargo, uf, d.ufs?.[uf])).join('')}</div>`;
+    <div class="uf-grid">${ufs.map(uf => cardMajoritario(cargo, uf, d.ufs?.[uf])).join('')
+      || '<div class="card vazio">Nenhum estado desta região tem 2º turno para governador.</div>'}</div>`;
 }
 
 // ---------- Deputados (proporcional) ----------
