@@ -2,7 +2,7 @@
 // Depende de app.js (estado, $, fmt, pct, esc, ABAS_EXTRA, mostrarAviso) e de comparativo.js (mostrarTooltip, esconderTooltip)
 
 Object.assign(estado, { mercado: null, rangeMercado: '1d', previsoes: null, periodoPrev: '1w' });
-const COR_CAND = { flavio: '#2563eb', lula: '#dc2626' }; // as mesmas cores do painel
+const COR_CAND = { flavio: '#16a34a', lula: '#dc2626' }; // as mesmas cores do painel
 const TZ = 'America/Sao_Paulo';
 const fmtNum = (v, casas) => (v == null ? '—' : v.toLocaleString('pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas }));
 const fmtVar = (v, casas = 2, suf = '%') => {

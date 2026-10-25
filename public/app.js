@@ -62,8 +62,15 @@ function seloSituacao(c) {
 }
 const eleitoDe = c => c.eleito || c.eleitoMat;
 
+// Presidente: cor fixa por candidato (Lula vermelho, Flávio verde), igual nos dois turnos
+const COR_FIXA = { '1-13': '#dc2626', '1-22': '#16a34a' };
 function corDe(chave) {
-  if (!estado.cores.has(chave)) estado.cores.set(chave, PALETA[estado.cores.size % PALETA.length]);
+  if (COR_FIXA[chave]) return COR_FIXA[chave];
+  if (!estado.cores.has(chave)) {
+    // os demais recebem a próxima cor da paleta, sem repetir as cores fixas
+    const livres = PALETA.filter(c => !Object.values(COR_FIXA).includes(c));
+    estado.cores.set(chave, livres[estado.cores.size % livres.length]);
+  }
   return estado.cores.get(chave);
 }
 

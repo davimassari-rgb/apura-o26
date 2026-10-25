@@ -15,7 +15,7 @@
   /* espectro (Congresso 2027) */
   --esp-esq: #e5484d; --esp-cen: #94a3b8; --esp-dir: #3b82f6; --esp-out: #c4b5a0;
   /* séries do comparativo (validadas: claro) */
-  --c-jair22: #5b9cf0; --c-flavio26: #1d4ed8; --c-lula22: #e0823f; --c-lula26: #b91c1c;
+  --c-jair22: #6cc28a; --c-flavio26: #15803d; --c-lula22: #e0823f; --c-lula26: #b91c1c;
 }
 /* tema escuro: segue o sistema, salvo se a pessoa escolheu "Dia" (data-theme="light") */
 @media (prefers-color-scheme: dark) {
@@ -25,7 +25,7 @@
     --warn-bg: #2b2414; --warn-line: #7a5d1d;
     /* séries do comparativo (validadas: escuro) */
     --c-dolar: #2dd4bf; --alta: #4ade80; --baixa: #f87171;
-    --c-jair22: #6591e6; --c-flavio26: #2c5bc4; --c-lula22: #d8752f; --c-lula26: #b5352a;
+    --c-jair22: #5fb97f; --c-flavio26: #22a04b; --c-lula22: #d8752f; --c-lula26: #b5352a;
   }
 }
 /* tema escuro escolhido manualmente no botão "Noite" */
@@ -35,7 +35,7 @@
     --warn-bg: #2b2414; --warn-line: #7a5d1d;
     /* séries do comparativo (validadas: escuro) */
     --c-dolar: #2dd4bf; --alta: #4ade80; --baixa: #f87171;
-    --c-jair22: #6591e6; --c-flavio26: #2c5bc4; --c-lula22: #d8752f; --c-lula26: #b5352a;
+    --c-jair22: #5fb97f; --c-flavio26: #22a04b; --c-lula22: #d8752f; --c-lula26: #b5352a;
 }
 * { box-sizing: border-box; }
 body {
