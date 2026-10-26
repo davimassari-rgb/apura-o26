@@ -236,10 +236,49 @@ function barraEmpilhada(r, cargo) {
     .map(c => `<span style="width:${c.pct}%;background:${corDe(cargo + '-' + c.numero)}" title="${esc(c.nome)} ${pct(c.pct)}"></span>`).join('')}</div>`;
 }
 
+// Painel de definição: mostra o eleito assim que o resultado estiver garantido (TSE ou matemática)
+// e, enquanto não estiver, quanto falta para a definição matemática.
+function painelDefinicao(r) {
+  if (!r?.candidatos?.length || !r.secoesTotalizadas) return '';
+  const [lider, segundo] = r.candidatos;
+  const cor = corDe('1-' + lider.numero);
+  if (eleitoDe(lider)) {
+    const como = lider.eleito
+      ? 'Resultado oficial: o TSE já declarou o candidato eleito.'
+      : lider.origemEleito === 'tse'
+        ? 'O TSE já indica o resultado como matematicamente definido.'
+        : 'Matematicamente definido: mesmo que todos os eleitores ainda não apurados votassem no adversário, a vitória não muda.';
+    return `<div class="card definicao definido" style="--cor:${cor}">
+      ${avatar(lider, 1, 'br', cor, 72)}
+      <div class="def-corpo">
+        <span class="selo selo-eleito">${ICONE_SELO}ELEITO</span>
+        <h2 class="def-titulo">${esc(lider.nome)} é o presidente eleito</h2>
+        <p>${como}</p>
+        <p class="muted">${pct(lider.pct)} dos votos válidos · ${fmt(lider.votos)} votos${segundo ? ` · vantagem de ${fmt(lider.votos - segundo.votos)} sobre ${esc(segundo.nome)}` : ''} · ${pct(r.pctSecoes)} das seções apuradas (boletim TSE ${esc(r.horaTotalizacao || '')}).</p>
+      </div>
+    </div>`;
+  }
+  // ainda indefinido: só faz sentido no 2º turno (no 1º, ninguém passou de 50% e houve 2º turno)
+  if (estado.turno !== 2 || !segundo || r.pctSecoes >= 100) return '';
+  const vantagem = lider.votos - segundo.votos;
+  const restantes = Math.max(0, r.eleitores - r.eleitoresApurados) + (r.votosEmDisputa || 0);
+  const progresso = restantes + vantagem ? Math.min(100, (vantagem / restantes) * 100) : 0;
+  return `<div class="card definicao" style="--cor:${cor}">
+    <div class="def-corpo">
+      <h2 class="def-titulo">Ainda não definido matematicamente</h2>
+      <p>${esc(lider.nome)} lidera por <b>${fmt(vantagem)}</b> votos. Ainda há <b>${fmt(restantes)}</b> eleitores não apurados.
+        O resultado fica definido quando a vantagem passar desse número.</p>
+      <div class="barra def-barra" title="Vantagem do líder em relação aos eleitores ainda não apurados"><span style="width:${progresso}%;background:${cor}"></span></div>
+      <p class="muted">Faltam ${fmt(Math.max(0, restantes - vantagem))} para a definição (eleitores restantes − vantagem) · quando zerar, o selo ELEITO aparece aqui sozinho.</p>
+    </div>
+  </div>`;
+}
+
 // ---------- abas ----------
 function renderBrasil() {
   const d = estado.dados[1];
   const br = d?.brasil;
+  $('#brDefinicao').innerHTML = painelDefinicao(br);
   $('#brProgresso').innerHTML = blocoProgresso(br);
   $('#brCandidatos').innerHTML = br ? listaCandidatos(br, 1, 'br') : '<div class="vazio">Aguardando divulgação do TSE.</div>';
   $('#brNumeros').innerHTML = blocoNumeros(br);

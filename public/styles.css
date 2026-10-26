@@ -301,3 +301,12 @@ table.sem-clique td:first-child { white-space: normal; min-width: 160px; }
 /* ---------- selo oficial e botão de tema ---------- */
 .selo-oficial { display: inline-flex; align-items: center; border-radius: 9px; padding: 7px 14px; font-size: 14px; font-weight: 600; background: var(--accent); color: #fff; }
 .tema button { display: inline-flex; align-items: center; gap: 6px; }
+
+/* painel de definição do resultado (aba Presidente · Brasil) */
+.definicao { display: flex; gap: 18px; align-items: center; border-left: 6px solid var(--cor); }
+.definicao .def-corpo { flex: 1; min-width: 0; }
+.definicao .def-titulo { margin: 6px 0 4px; font-size: 20px; text-transform: none; letter-spacing: 0; color: var(--ink); }
+.definicao p { margin: 4px 0; }
+.definicao.definido .def-titulo { font-size: 24px; }
+.def-barra { height: 10px; margin: 10px 0 6px; }
+@media (max-width: 600px) { .definicao { flex-direction: column; align-items: flex-start; } }
